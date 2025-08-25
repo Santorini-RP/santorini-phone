@@ -13,8 +13,24 @@ export interface Layout {
 const mockLayout: Layout = {
   dock: ["phone", "messages", "camera", "photos"],
   pages: [
-    ["settings", "apps", "clock", "mail", "weather", "notes", "calculator", "maps"],
-    ["music", "marketplace", "wallet", "garage", "crypto", "birdy", "spark", "trendy", "instapic", "darkchat", "voicememo", "yellowpages", "home"]
+    [
+      "settings", 
+      "apps", 
+      "clock", 
+      "mail", 
+      "weather", 
+      "wallet", 
+      "garage", 
+      "home", 
+      "maps", 
+      "notes", 
+      "calculator", 
+      "voicememo", 
+      "services", 
+      "music", 
+      "pages", 
+    ],
+    ["crypto", "darkchat"]
   ]
 }
 
@@ -31,7 +47,7 @@ export const useLayoutStore = defineStore('layout', () => {
 
   // Constants
   const MAX_PAGES = 2
-  const MAX_APPS_PER_PAGE = 12
+  const MAX_APPS_PER_PAGE = 24 // Aumentado para suportar mais apps por página
   const MAX_DOCK_APPS = 4
 
   // Getters & Computed Properties for reactive UI
@@ -68,6 +84,15 @@ export const useLayoutStore = defineStore('layout', () => {
   });
 
   const isNavigationBarVisible = computed(() => navigationBarMode.value !== 'fullscreen');
+
+  const isAppInstalled = computed(() => {
+    return (appId: string): boolean => {
+      if (!layout.value || !layout.value.pages) return false;
+      const inPages = layout.value.pages.some(page => page.includes(appId));
+      const inDock = layout.value.dock.includes(appId);
+      return inPages || inDock;
+    }
+  });
   
   // Actions
   const setLayoutConfig = (appConfig: AppConfig | null) => {
@@ -123,8 +148,9 @@ export const useLayoutStore = defineStore('layout', () => {
     // Ensure we don't exceed page limit
     if (targetPageIndex >= MAX_PAGES) return
 
-    // Check if target page has space
-    if (layout.value.pages[targetPageIndex].length >= MAX_APPS_PER_PAGE) return
+    // Check if target page has space (unless moving within same page)
+    const isSamePage = fromInfo.type === 'page' && fromInfo.pageIndex === targetPageIndex
+    if (!isSamePage && layout.value.pages[targetPageIndex].length >= MAX_APPS_PER_PAGE) return
 
     // Remove from source
     if (fromInfo.type === 'page' && fromInfo.pageIndex !== undefined) {
@@ -132,6 +158,10 @@ export const useLayoutStore = defineStore('layout', () => {
       const fromIndex = fromPage.indexOf(appId)
       if (fromIndex !== -1) {
         fromPage.splice(fromIndex, 1)
+        // Adjust target index if moving within same page and removing from before target
+        if (isSamePage && fromIndex < targetIndex) {
+          targetIndex--
+        }
       }
     } else if (fromInfo.type === 'dock') {
       const dockIndex = layout.value.dock.indexOf(appId)
@@ -213,6 +243,29 @@ export const useLayoutStore = defineStore('layout', () => {
     }
   }
 
+  const installApp = (appId: string) => {
+    if (isAppInstalled.value(appId)) {
+      console.warn(`App ${appId} is already installed.`);
+      return;
+    }
+
+    for (let i = 0; i < layout.value.pages.length; i++) {
+      if (layout.value.pages[i].length < MAX_APPS_PER_PAGE) {
+        layout.value.pages[i].push(appId);
+        saveLayout();
+        return;
+      }
+    }
+
+    if (layout.value.pages.length < MAX_PAGES) {
+      layout.value.pages.push([appId]);
+      saveLayout();
+      return;
+    }
+
+    alert('Home Screen is full. Cannot install new app.');
+  };
+
   const saveLayout = async () => {
     console.log('💾 Salvando layout (mock):', JSON.stringify(layout.value))
   }
@@ -253,6 +306,7 @@ export const useLayoutStore = defineStore('layout', () => {
     statusBarStyle,
     navigationBarMode,
     navigationBarStyle,
+    isAppInstalled,
     
     // Actions
     setLayoutConfig,
@@ -269,6 +323,7 @@ export const useLayoutStore = defineStore('layout', () => {
     canDropOnDock,
     removeFromGrid,
     removeFromDock,
+    installApp,
     loadLayout,
   }
 })

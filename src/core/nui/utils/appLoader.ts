@@ -10,7 +10,7 @@ export interface BarConfig {
 export interface AppConfig {
   id: string
   name: string
-  icon: string
+  icon: string // This is the emoji icon for the home screen
   preinstalled: boolean
   removable: boolean
   category: AppCategory
@@ -19,6 +19,13 @@ export interface AppConfig {
   statusBar?: Partial<BarConfig>
   navigationBar?: Partial<BarConfig>
   notifications?: number;
+  
+  // App Store specific information
+  description?: string;
+  provider?: string;
+  compatibility?: string;
+  inAppPurchases?: string;
+  screenshots?: string[];
 }
 
 export interface SystemConfig {
