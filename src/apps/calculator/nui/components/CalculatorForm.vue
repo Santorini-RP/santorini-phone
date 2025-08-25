@@ -16,7 +16,7 @@ const buttons = [
   ['0', '.', '=']
 ]
 
-const getButtonClass = (button: string) => {
+const getButtonClass = (button) => {
   const baseClass = 'h-20 rounded-full font-semibold text-xl transition-all active:scale-95'
   
   if (['C', '±', '%'].includes(button)) {
@@ -30,7 +30,7 @@ const getButtonClass = (button: string) => {
   return `${baseClass} bg-gray-700 text-white hover:bg-gray-600`
 }
 
-const handleButtonClick = (button: string) => {
+const handleButtonClick = (button) => {
   switch (button) {
     case 'C':
       calculatorStore.clear()

@@ -1,0 +1,90 @@
+# 📖 Custom Knowledge — Projeto iPhone (FiveM)
+
+## 🎯 Resumo do Projeto
+
+Este projeto é um **telefone estilo iPhone 15** dentro do FiveM, com um sistema operacional próprio.
+O sistema terá **apps do sistema** (não removíveis) e **apps de usuário** (instaláveis/desinstaláveis).
+O frontend deve ser construído em **Vue 3 + TypeScript + Pinia + Vue Router + TailwindCSS + Axios (via plugin em `/plugins`)**.
+
+---
+
+## 📂 Estrutura de Pastas
+
+```
+src/
+├── apps/
+│   └── nome-do-app/
+│       └── nui/
+│           ├── manifest.ts
+│           ├── index.vue
+│           ├── components/
+│           ├── router/
+│           │   └── index.ts
+│           └── store/
+│               └── app-store.ts
+└── core/
+    └── nui/
+        ├── App.vue
+        ├── components/
+        ├── router/index.ts
+        ├── store/
+        └── utils/appLoader.ts
+```
+
+---
+
+## 📜 Regras do Manifesto
+
+Cada app deve conter um `manifest.ts` dentro da pasta `nui`.
+
+```ts
+export type AppCategory = "system" | "store";
+
+export interface AppConfig {
+  id: string;
+  name: string;
+  icon: string;
+  preinstalled: boolean; // já vem no telefone?
+  removable: boolean;    // pode ser removido?
+  category: AppCategory; // "system" ou "store"
+  route: string;         // rota principal
+}
+```
+
+---
+
+## 📱 UI e Interações
+
+* Layout inspirado no **iPhone 15**.
+* **StatusBar**, **HomeScreen**, **LockScreen** e **PhysicalButtons** ficam no core.
+* **Responsividade obrigatória**: o usuário deve poder **ajustar o tamanho do telefone (%)** pelo app **Settings**.
+* **Botões físicos simulados**:
+
+  * Power → bloqueia/desbloqueia tela.
+  * Volume + / - → ajusta volume global.
+  * Mute switch → ativa/desativa notificações.
+* **Home Bar (gesto inferior)**:
+
+  * Tap → volta para HomeScreen.
+  * Segurar → multitarefa (futuro).
+
+---
+
+## 📏 Convenções de Código
+
+* Sempre usar **`<script setup lang="ts">`**.
+* Stores com **Pinia**.
+* TailwindCSS para estilização.
+* Alias `@/` em imports.
+* Cada app é **100% isolado** (manifest, router, store, components e index.vue ficam dentro de `nui`).
+
+---
+
+## 🔐 Boas Práticas
+
+* O **core** nunca deve depender de apps específicos.
+* **System apps** → `category: "system"`, `preinstalled: true`, `removable: false`.
+* **Store apps** → `category: "store"`, podendo ser `preinstalled` ou não.
+* Rotas devem ser registradas dinamicamente via `appLoader.ts`.
+* Se um app for removido, o sistema continua funcionando.
+* Os componentes do sistema operacional **devem ser centralizados em `/src/core`** para uso em todos os apps (ex: modais, seleção de fotos, avisos).

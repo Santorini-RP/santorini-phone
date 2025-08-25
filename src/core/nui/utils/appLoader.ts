@@ -1,46 +1,33 @@
 import type { RouteRecordRaw } from 'vue-router'
 
+export type AppCategory = "system" | "store"
+
 export interface AppConfig {
   id: string
   name: string
   icon: string
-  color: string
-  badge?: string
-  route?: string
-  category?: 'app' | 'dock'
+  preinstalled: boolean // já vem no telefone?
+  removable: boolean    // pode ser removido?
+  category: AppCategory // "system" ou "store"
+  route: string         // rota principal
 }
 
 export interface SystemConfig {
   apps: string[]
 }
 
-// Configuração padrão dos apps do sistema
-const systemApps: AppConfig[] = [
-  // Apps principais do iOS que sempre aparecem
-  { id: 'settings', name: 'Settings', icon: '⚙️', color: 'bg-gray-600', category: 'app' },
-  { id: 'clock', name: 'Clock', icon: '🕐', color: 'bg-orange-500', category: 'app' },
-  { id: 'weather', name: 'Weather', icon: '🌤️', color: 'bg-blue-400', category: 'app' },
-  { id: 'notes', name: 'Notes', icon: '📝', color: 'bg-yellow-400', category: 'app' },
-  
-  // Dock apps (sempre presentes)
-  { id: 'phone', name: 'Phone', icon: '📞', color: 'bg-green-500', category: 'dock' },
-  { id: 'messages', name: 'Messages', icon: '💬', color: 'bg-green-600', badge: '1', category: 'dock' },
-  { id: 'camera', name: 'Camera', icon: '📷', color: 'bg-gray-700', category: 'dock' },
-  { id: 'photos', name: 'Photos', icon: '🖼️', color: 'bg-blue-500', category: 'dock' }
-]
-
-// Configuração dos apps modulares (baseado nas pastas em /apps)
-const modularAppsConfig: Record<string, Omit<AppConfig, 'id'>> = {
-  calculator: {
-    name: 'Calculator',
-    icon: '🧮',
-    color: 'bg-gray-800',
-    route: '/app/calculator',
-    category: 'app'
+// Função para carregar o manifesto de um app específico
+async function loadAppManifest(appId: string): Promise<AppConfig | null> {
+  try {
+    const manifestModule = await import(`@apps/${appId}/nui/manifest.ts`)
+    return manifestModule.default || manifestModule
+  } catch (error) {
+    console.warn(`Erro ao carregar manifesto do app ${appId}:`, error)
+    return null
   }
-  // Adicione aqui a configuração de outros apps conforme você criar as pastas
 }
 
+// Função para carregar configuração do sistema
 export async function loadSystemConfig(): Promise<SystemConfig> {
   try {
     const response = await fetch('/config.json')
@@ -55,55 +42,101 @@ export async function loadSystemConfig(): Promise<SystemConfig> {
   }
 }
 
-export function getAvailableApps(enabledApps: string[]): {
-  mainApps: AppConfig[]
-  dockApps: AppConfig[]
-} {
-  const mainApps: AppConfig[] = []
-  const dockApps: AppConfig[] = []
+// Função para carregar todos os apps disponíveis
+export async function getAvailableApps(enabledApps: string[]): Promise<{
+  systemApps: AppConfig[]
+  storeApps: AppConfig[]
+}> {
+  const systemApps: AppConfig[] = []
+  const storeApps: AppConfig[] = []
 
-  // Adicionar apps do sistema
-  systemApps.forEach(app => {
-    if (app.category === 'dock') {
-      dockApps.push(app)
-    } else {
-      mainApps.push(app)
-    }
-  })
+  // Carregar manifestos de todos os apps habilitados
+  const appConfigs = await Promise.all(
+    enabledApps.map(appId => loadAppManifest(appId))
+  )
 
-  // Adicionar apps modulares habilitados
-  enabledApps.forEach(appId => {
-    const appConfig = modularAppsConfig[appId]
-    if (appConfig) {
-      const fullConfig: AppConfig = {
-        id: appId,
-        ...appConfig
-      }
-      
-      if (appConfig.category === 'dock') {
-        dockApps.push(fullConfig)
+  // Filtrar e categorizar apps
+  appConfigs.forEach(config => {
+    if (config) {
+      if (config.category === 'system') {
+        systemApps.push(config)
       } else {
-        mainApps.push(fullConfig)
+        storeApps.push(config)
       }
     }
   })
 
-  return { mainApps, dockApps }
+  return { systemApps, storeApps }
 }
 
-export function generateAppRoutes(enabledApps: string[]): RouteRecordRaw[] {
+// Função para gerar rotas dinamicamente baseadas nos manifestos
+export async function generateAppRoutes(enabledApps: string[]): Promise<RouteRecordRaw[]> {
   const routes: RouteRecordRaw[] = []
 
-  enabledApps.forEach(appId => {
-    const appConfig = modularAppsConfig[appId]
-    if (appConfig?.route) {
+  // Carregar manifestos de todos os apps habilitados
+  const appConfigs = await Promise.all(
+    enabledApps.map(appId => loadAppManifest(appId))
+  )
+
+  // Gerar rotas baseadas nos manifestos
+  appConfigs.forEach(config => {
+    if (config && config.route) {
       routes.push({
-        path: appConfig.route,
-        name: appId,
-        component: () => import(`@apps/${appId}/nui/index.vue`)
+        path: config.route,
+        name: config.id,
+        component: () => import(`@apps/${config.id}/nui/index.vue`)
       })
     }
   })
 
   return routes
+}
+
+// Função para instalar um novo app
+export async function installApp(appId: string): Promise<boolean> {
+  try {
+    const manifest = await loadAppManifest(appId)
+    if (!manifest) {
+      throw new Error(`Manifesto do app ${appId} não encontrado`)
+    }
+
+    // Verificar se o app pode ser instalado
+    if (manifest.preinstalled && !manifest.removable) {
+      console.warn(`App ${appId} é do sistema e não pode ser instalado/removido`)
+      return false
+    }
+
+    // Aqui você poderia adicionar lógica para persistir a instalação
+    // Por exemplo, salvar no localStorage ou enviar para o servidor
+    
+    return true
+  } catch (error) {
+    console.error(`Erro ao instalar app ${appId}:`, error)
+    return false
+  }
+}
+
+// Função para desinstalar um app
+export async function uninstallApp(appId: string): Promise<boolean> {
+  try {
+    const manifest = await loadAppManifest(appId)
+    if (!manifest) {
+      console.warn(`Manifesto do app ${appId} não encontrado`)
+      return false
+    }
+
+    // Verificar se o app pode ser removido
+    if (!manifest.removable) {
+      console.warn(`App ${appId} não pode ser removido`)
+      return false
+    }
+
+    // Aqui você poderia adicionar lógica para persistir a remoção
+    // Por exemplo, remover do localStorage ou enviar para o servidor
+    
+    return true
+  } catch (error) {
+    console.error(`Erro ao desinstalar app ${appId}:`, error)
+    return false
+  }
 }

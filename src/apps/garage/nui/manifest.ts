@@ -1,0 +1,13 @@
+import type { AppConfig } from '@core/nui/utils/appLoader'
+
+const manifest: AppConfig = {
+  id: 'garage',
+  name: 'Garage',
+  icon: '🏠',
+  preinstalled: false,
+  removable: true,
+  category: 'store',
+  route: '/app/garage'
+}
+
+export default manifest

@@ -18,7 +18,7 @@ async function createAppRouter() {
   try {
     // Carregar configuração e gerar rotas dos apps
     const config = await loadSystemConfig()
-    const appRoutes = generateAppRoutes(config.apps || [])
+    const appRoutes = await generateAppRoutes(config.apps || [])
     routes.push(...appRoutes)
   } catch (error) {
     console.warn('Erro ao carregar rotas dos apps:', error)

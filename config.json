@@ -1,5 +1,29 @@
 {
   "apps": [
-    "calculator"
+    "calculator",
+    "settings",
+    "apps",
+    "birdy",
+    "camera",
+    "clock",
+    "crypto",
+    "darkchat",
+    "garage",
+    "home",
+    "instapic",
+    "mail",
+    "maps",
+    "marketplace",
+    "messages",
+    "music",
+    "notes",
+    "phone",
+    "photos",
+    "spark",
+    "trendy",
+    "voicememo",
+    "wallet",
+    "weather",
+    "yellowpages"
   ]
 }

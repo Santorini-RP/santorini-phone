@@ -5,22 +5,28 @@ import { loadSystemConfig, getAvailableApps, type AppConfig } from '@core/nui/ut
 export const useAppsStore = defineStore('apps', () => {
   const enabledApps = ref<string[]>([])
   const isLoaded = ref(false)
+  const systemApps = ref<AppConfig[]>([])
+  const storeApps = ref<AppConfig[]>([])
 
-  const availableApps = computed(() => {
-    return getAvailableApps(enabledApps.value)
-  })
-
-  const mainApps = computed(() => availableApps.value.mainApps)
-  const dockApps = computed(() => availableApps.value.dockApps)
+  const mainApps = computed(() => storeApps.value)
+  const dockApps = computed(() => systemApps.value)
 
   const loadAppsConfig = async () => {
     try {
       const config = await loadSystemConfig()
       enabledApps.value = config.apps || []
+      
+      // Carregar apps categorizados pelos manifestos
+      const apps = await getAvailableApps(enabledApps.value)
+      systemApps.value = apps.systemApps
+      storeApps.value = apps.storeApps
+      
       isLoaded.value = true
     } catch (error) {
       console.error('Erro ao carregar configuração de apps:', error)
       enabledApps.value = []
+      systemApps.value = []
+      storeApps.value = []
       isLoaded.value = true
     }
   }
@@ -32,9 +38,10 @@ export const useAppsStore = defineStore('apps', () => {
   return {
     enabledApps,
     isLoaded,
+    systemApps,
+    storeApps,
     mainApps,
     dockApps,
-    availableApps,
     loadAppsConfig,
     getAppById
   }
