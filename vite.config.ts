@@ -14,7 +14,4 @@ export default defineConfig({
       '@apps': fileURLToPath(new URL('./src/apps', import.meta.url))
     },
   },
-  css: {
-    postcss: './postcss.config.js',
-  }
 })

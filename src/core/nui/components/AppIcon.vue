@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLayoutStore } from '@core/nui/store/layout'
-import { useAppsStore } from '@core/nui/store/apps'
+import { useModalStore } from '@core/nui/store/modal'
+import { getAppById } from '@core/nui/services/appManager'
 
 const props = defineProps<{
   appId: string
@@ -12,14 +13,11 @@ const props = defineProps<{
 }>()
 
 const layout = useLayoutStore()
-const appsStore = useAppsStore()
 const router = useRouter()
+const modalStore = useModalStore()
 
 // Busca informações do app
-const app = computed(() => {
-  const allApps = [...appsStore.systemApps, ...appsStore.storeApps]
-  return allApps.find(a => a.id === props.appId)
-})
+const app = computed(() => getAppById(props.appId))
 
 // Caminho para a imagem do app
 const getAppIcon = (appId: string) => {
@@ -38,13 +36,24 @@ const openApp = () => {
 }
 
 // Remove app (se permitido)
-const removeApp = () => {
+const removeApp = async () => {
   if (!app.value?.removable) return
   
-  if (props.isDock) {
-    layout.removeFromDock(props.appId)
-  } else {
-    layout.removeFromGrid(props.appId)
+  const result = await modalStore.showModal({
+    title: `Remove "${app.value.name}"?`,
+    message: `Removing this app will also delete its data.`,
+    buttons: [
+      { id: 'cancel', text: 'Cancel', style: 'cancel' },
+      { id: 'remove', text: 'Remove', style: 'destructive' },
+    ]
+  })
+
+  if (result === 'remove') {
+    if (props.isDock) {
+      layout.removeFromDock(props.appId)
+    } else {
+      layout.removeFromGrid(props.appId)
+    }
   }
 }
 
@@ -155,14 +164,22 @@ const onTouchEnd = () => {
       <button
         v-if="layout.isEditing && app?.removable"
         @click.stop="removeApp"
-        class="remove-button absolute -top-2 -right-2 w-6 h-6 bg-red-500 border-2 border-white rounded-full flex items-center justify-center shadow-lg z-10 hover:bg-red-600 transition-colors"
+        class="remove-button absolute -top-1.5 -left-1.5 w-6 h-6 bg-gray-500/90 backdrop-blur-sm border-2 border-white/50 rounded-full flex items-center justify-center shadow-lg z-10 hover:bg-gray-400 transition-colors"
       >
-        <span class="text-white text-sm font-bold leading-none">×</span>
+        <span class="text-white text-base font-bold leading-none pb-0.5">-</span>
       </button>
+
+      <!-- Badge de notificação -->
+      <div 
+        v-if="app?.notifications && app.notifications > 0 && !layout.isEditing"
+        class="notification-badge absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md"
+      >
+        {{ app.notifications }}
+      </div>
     </div>
 
     <!-- Nome do App -->
-    <span class="app-name text-white text-xs mt-1 text-center leading-tight max-w-full truncate px-1">
+    <span class="app-name text-white text-xs mt-1 text-center leading-tight max-w-full truncate px-1 shadow-black/50 [text-shadow:0_1px_2px_var(--tw-shadow-color)]">
       {{ app?.name || 'Unknown' }}
     </span>
   </div>

@@ -1,17 +1,28 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useSystemStore } from '@core/nui/store/system'
+import { useLayoutStore } from '@core/nui/store/layout'
+import { useSettingsStore } from '@apps/settings/nui/store/app-store'
+import { getAppById } from '@core/nui/services/appManager'
 import StatusBar from '@core/nui/components/StatusBar.vue'
 import LockScreen from '@core/nui/components/LockScreen.vue'
 import HomeScreen from '@core/nui/components/HomeScreen.vue'
-import PhysicalButtons from '@core/nui/components/PhysicalButtons.vue'
+import PhoneFrame from '@core/nui/components/PhoneFrame.vue'
+import NavigationBar from '@core/nui/components/NavigationBar.vue'
+import Modal from '@core/nui/components/Modal.vue'
+import { Music } from 'lucide-vue-next'
 
-const router = useRouter()
+const route = useRoute()
 const systemStore = useSystemStore()
+const layoutStore = useLayoutStore()
+const settingsStore = useSettingsStore()
 
 const isScreenOn = ref(true)
 const showDynamicIsland = ref(false)
+const isIslandExpanded = ref(false)
+
+const wallpaperUrl = '/src/core/nui/assets/images/backgrounds/cloud8.jpg'
 
 const currentTime = computed(() => {
   const now = new Date()
@@ -22,6 +33,49 @@ const currentTime = computed(() => {
   })
 })
 
+const phoneContainerRef = ref<HTMLElement | null>(null)
+
+watch(() => settingsStore.theme, (newTheme) => {
+  if (phoneContainerRef.value) {
+    if (newTheme === 'dark') {
+      phoneContainerRef.value.classList.add('dark')
+    } else {
+      phoneContainerRef.value.classList.remove('dark')
+    }
+  }
+}, { immediate: true })
+
+watch(() => settingsStore.phoneScale, (newScale) => {
+  if (phoneContainerRef.value) {
+    phoneContainerRef.value.style.setProperty('--phone-scale', (newScale / 100).toString());
+  }
+}, { immediate: true });
+
+const screenStyle = computed(() => ({
+  filter: `brightness(${systemStore.screenBrightness})`
+}));
+
+const mainContainerClasses = computed(() => {
+  const classes = ['h-full', 'w-full'];
+  if (systemStore.isLocked || route.name === 'home' || !route.name) {
+    classes.push('bg-transparent');
+    return classes;
+  }
+
+  if (layoutStore.statusBarMode === 'default') {
+    classes.push('bg-gray-100 dark:bg-ios-dark-bg');
+  } else {
+    classes.push('bg-transparent');
+  }
+  return classes;
+});
+
+const mainContentClasses = computed(() => {
+  const classes = ['h-full', 'w-full', 'overflow-hidden'];
+  if (systemStore.isLocked) return classes;
+  return classes;
+});
+
 const handlePowerButton = () => {
   isScreenOn.value = !isScreenOn.value
   if (!isScreenOn.value) {
@@ -29,270 +83,161 @@ const handlePowerButton = () => {
   }
 }
 
-const handleVolumeUp = () => {
-  systemStore.adjustVolume(10)
-}
-
-const handleVolumeDown = () => {
-  systemStore.adjustVolume(-10)
-}
-
-const handleSilentSwitch = () => {
-  systemStore.toggleSilentMode()
-}
-
 const handleUnlock = () => {
-  isScreenOn.value = true
-  router.push('/')
-}
-
-const goHome = () => {
-  if (!systemStore.isLocked) {
-    router.push('/')
+  if (systemStore.isLocked) {
+    systemStore.unlockDevice()
   }
 }
 
-const handleDynamicIslandClick = () => {
-  // Expandir Dynamic Island temporariamente
-  const island = document.querySelector('.dynamic-island') as HTMLElement
-  if (island) {
-    island.style.transform = 'translateX(-50%) scale(1.1)'
-    setTimeout(() => {
-      island.style.transform = 'translateX(-50%) scale(1)'
-    }, 200)
-  }
+const toggleIsland = () => {
+  isIslandExpanded.value = !isIslandExpanded.value
 }
+
+watch(route, (newRoute) => {
+  const routeMetaAppId = newRoute.meta.appId as string | undefined;
+  const appConfig = getAppById(routeMetaAppId || newRoute.name as string);
+  layoutStore.setLayoutConfig(appConfig || null);
+}, { immediate: true });
+
 
 onMounted(() => {
-  // Simular Dynamic Island aparecendo
   setTimeout(() => {
     showDynamicIsland.value = true
   }, 1000)
+  
+  if (phoneContainerRef.value) {
+    if (settingsStore.theme === 'dark') {
+      phoneContainerRef.value.classList.add('dark')
+    } else {
+      phoneContainerRef.value.classList.remove('dark')
+    }
+    phoneContainerRef.value.style.setProperty('--phone-scale', (settingsStore.phoneScale / 100).toString());
+  }
 })
 </script>
 
-<style scoped>
-/* Phone Container */
-.phone-container {
-  width: 375px;
-  height: 812px;
-  transform: scale(0.7);
-  filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.8));
-}
-
-/* Phone Frame */
-.phone-frame {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 50%, #000000 100%);
-  border-radius: 50px;
-  padding: 6px;
-  box-shadow: 
-    inset 0 2px 4px rgba(255, 255, 255, 0.1),
-    0 0 0 2px #333,
-    0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-/* Notch Container */
-.notch-container {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-}
-
-/* Dynamic Island */
-.dynamic-island {
-  width: 120px;
-  height: 30px;
-  background: #000000;
-  border-radius: 20px;
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 
-    inset 0 1px 2px rgba(255, 255, 255, 0.1),
-    0 2px 8px rgba(0, 0, 0, 0.6);
-}
-
-.dynamic-island:hover {
-  transform: scale(1.05);
-  background: #1a1a1a;
-}
-
-.camera-sensor {
-  width: 4px;
-  height: 4px;
-  background: #333;
-  border-radius: 50%;
-}
-
-/* Phone Screen */
-.phone-screen {
-  width: 100%;
-  height: 100%;
-  background: #000000;
-  border-radius: 44px;
-  overflow: hidden;
-  position: relative;
-}
-
-/* Screen Content */
-.screen-content {
-  width: 100%;
-  height: 100%;
-  background: url('/src/core/nui/assets/images/backgrounds/cloud8.jpg') center/cover no-repeat;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.5s ease;
-  position: relative;
-}
-
-.screen-off {
-  background: #000000;
-  opacity: 0.1;
-}
-
-/* Main Content */
-.main-content {
-  flex: 1;
-  padding-top: 50px;
-  overflow: hidden;
-  position: relative;
-}
-
-.app-content {
-  height: 100%;
-  width: 100%;
-}
-
-/* Home Indicator */
-.home-indicator-bar {
-  position: absolute;
-  bottom: 8px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  z-index: 20;
-}
-
-.home-indicator {
-  width: 134px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.home-indicator:hover {
-  background: rgba(255, 255, 255, 0.6);
-  transform: scaleX(1.1);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .phone-container {
-    transform: scale(0.6);
-  }
-}
-
-@media (max-width: 480px) {
-  .phone-container {
-    transform: scale(0.5);
-  }
-}
-
-@media (max-width: 360px) {
-  .phone-container {
-    transform: scale(0.4);
-  }
-}
-
-/* Animations */
-@keyframes island-pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-.dynamic-island {
-  animation: island-pulse 3s infinite ease-in-out;
-}
-</style>
-
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4">
-    <!-- iPhone 15 Container -->
-    <div class="relative phone-container">
-      <!-- Physical Buttons -->
-      <PhysicalButtons 
+  <div class="min-h-screen flex items-center justify-center p-4 bg-zinc-800">
+    <div ref="phoneContainerRef" class="phone-container relative w-[375px] h-[812px]">
+      <PhoneFrame
         @power="handlePowerButton"
-        @volume-up="handleVolumeUp"
-        @volume-down="handleVolumeDown"
-        @silent-switch="handleSilentSwitch"
-      />
-      
-      <!-- iPhone Frame -->
-      <div class="phone-frame">
-        <!-- Dynamic Island / Notch -->
-        <div class="notch-container">
+        @volume-up="systemStore.adjustVolume(10)"
+        @volume-down="systemStore.adjustVolume(-10)"
+        @silent-switch="systemStore.toggleSilentMode()"
+      >
+        <div 
+          class="w-full h-full bg-cover bg-center flex flex-col transition-all duration-300 relative"
+          :style="[{ backgroundImage: `url(${wallpaperUrl})` }, screenStyle]"
+          :class="{ 'opacity-0': !isScreenOn }"
+        >
+          <div class="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-indigo-800/70 to-black/50"></div>
           <div 
             v-if="isScreenOn && showDynamicIsland"
-            class="dynamic-island"
-            @click="handleDynamicIslandClick"
+            @click="toggleIsland"
+            class="absolute top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)]"
+            :class="isIslandExpanded ? 'w-[90%]' : 'w-[120px]'"
           >
-            <div class="camera-sensor"></div>
-          </div>
-        </div>
-
-        <!-- Screen Content -->
-        <div class="phone-screen">
-          <div 
-            class="screen-content"
-            :class="{ 'screen-off': !isScreenOn }"
-          >
-            <!-- Status Bar -->
-            <StatusBar v-if="isScreenOn" :time="currentTime" />
-
-            <!-- Main Content -->
-            <div v-if="isScreenOn" class="main-content">
-              <!-- Lock Screen -->
-              <LockScreen 
-                v-if="systemStore.isLocked" 
-                @unlock="handleUnlock"
-                :time="currentTime"
-              />
-              
-              <!-- Home Screen or Apps -->
-              <div v-else class="app-content">
-                <router-view v-slot="{ Component }">
-                  <component :is="Component" v-if="Component" />
-                  <HomeScreen v-else />
-                </router-view>
+            <div 
+              class="bg-black rounded-full flex items-center cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.6)] hover:bg-zinc-900"
+              :class="isIslandExpanded ? 'h-[80px] p-4' : 'h-[30px]'"
+            >
+              <div v-if="!isIslandExpanded" class="flex items-center justify-end w-full px-2 transition-opacity duration-200">
+                <div class="w-3 h-3 rounded-full bg-blue-900/50 relative overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-radial from-blue-400/50 to-transparent to-70%"></div>
+                  <div class="absolute top-1/3 left-1/3 w-px h-px bg-blue-200/80 rounded-full"></div>
+                </div>
+              </div>
+              <div v-else class="text-white w-full flex items-center justify-between animate-fade-in opacity-0" style="animation-delay: 200ms; animation-fill-mode: forwards;">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Music class="w-6 h-6" />
+                  </div>
+                  <div class="truncate">
+                    <p class="text-sm font-semibold truncate">Song Title Placeholder</p>
+                    <p class="text-xs text-gray-400 truncate">Artist Name</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                  <div class="w-10 h-6 flex items-center justify-between">
+                    <span class="w-1 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0s"></span>
+                    <span class="w-1 h-4 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></span>
+                    <span class="w-1 h-5 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></span>
+                    <span class="w-1 h-3 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.6s"></span>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <!-- Home Indicator -->
-            <div v-if="isScreenOn" class="home-indicator-bar">
-              <div 
-                class="home-indicator"
-                @click="goHome"
-                @touchstart="goHome"
-              ></div>
-            </div>
           </div>
+          <StatusBar 
+            v-if="isScreenOn && layoutStore.statusBarMode !== 'fullscreen'" 
+            :time="currentTime"
+            class="absolute top-0 left-0 right-0 z-40"
+          />
+          <main 
+            v-if="isScreenOn" 
+            class="h-full w-full overflow-hidden absolute inset-0"
+          >
+            <LockScreen 
+              v-if="systemStore.isLocked" 
+              @unlock="handleUnlock"
+              :time="currentTime"
+            />
+            <div v-else :class="mainContainerClasses">
+              <router-view v-slot="{ Component, route }">
+                <transition
+                  :name="route.meta.transition || 'fade'"
+                  mode="out-in"
+                >
+                  <div :key="route.name" :class="mainContentClasses">
+                    <component 
+                      :is="Component" 
+                      v-if="Component" 
+                    />
+                    <HomeScreen v-else class="h-full w-full"/>
+                  </div>
+                </transition>
+              </router-view>
+            </div>
+          </main>
+          <NavigationBar v-if="isScreenOn && !systemStore.isLocked" />
         </div>
-      </div>
+      </PhoneFrame>
+      <Modal />
     </div>
   </div>
 </template>
+
+<style>
+.phone-container {
+  transform: scale(var(--phone-scale, 1));
+  transition: transform 0.3s ease;
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active,
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.slide-right-enter-from {
+  transform: translateX(-100%);
+}
+.slide-right-leave-to {
+  transform: translateX(100%);
+}
+
+.slide-left-enter-from {
+  transform: translateX(100%);
+}
+.slide-left-leave-to {
+  transform: translateX(-100%);
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+</style>

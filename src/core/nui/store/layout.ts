@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { AppConfig, BarConfig } from '@core/nui/utils/appLoader'
+import { useSettingsStore } from '@apps/settings/nui/store/app-store'
 
 // 🔹 Interface do layout (grid + dock)
 export interface Layout {
@@ -18,24 +20,60 @@ const mockLayout: Layout = {
 
 export const useLayoutStore = defineStore('layout', () => {
   // State
-  const layout = ref<Layout>(mockLayout)
+  const layout = ref<Layout>({ dock: [], pages: [[]] })
   const isEditing = ref(false)
   const loading = ref(false)
+  const isLayoutLoaded = ref(false)
   const currentPage = ref(0)
   const draggedApp = ref<string | null>(null)
   const draggedFrom = ref<{ type: 'page' | 'dock', pageIndex?: number, itemIndex: number } | null>(null)
-  
+  const currentAppConfig = ref<AppConfig | null>(null);
+
   // Constants
   const MAX_PAGES = 2
   const MAX_APPS_PER_PAGE = 12
   const MAX_DOCK_APPS = 4
 
-  // Getters
+  // Getters & Computed Properties for reactive UI
   const totalPages = computed(() => Math.min(layout.value.pages.length, MAX_PAGES))
-  const currentPageApps = computed(() => layout.value.pages[currentPage.value] || [])
-  const canAddPage = computed(() => layout.value.pages.length < MAX_PAGES)
+
+  const statusBarMode = computed<BarConfig['mode']>(() => {
+    if (!currentAppConfig.value) return 'overlay'; // Home screen default
+    return currentAppConfig.value.statusBar?.mode || 'default';
+  });
+
+  const statusBarStyle = computed<BarConfig['style']>(() => {
+    const settingsStore = useSettingsStore();
+    const globalThemeStyle = settingsStore.theme === 'dark' ? 'dark' : 'light';
+
+    if (statusBarMode.value === 'default') {
+      return globalThemeStyle;
+    }
+    return currentAppConfig.value?.statusBar?.style || globalThemeStyle;
+  });
+
+  const navigationBarMode = computed<BarConfig['mode']>(() => {
+    if (!currentAppConfig.value) return 'overlay'; // Home screen default
+    return currentAppConfig.value?.navigationBar?.mode || 'default';
+  });
+
+  const navigationBarStyle = computed<BarConfig['style']>(() => {
+    const settingsStore = useSettingsStore();
+    const globalThemeStyle = settingsStore.theme === 'dark' ? 'dark' : 'light';
+
+    if (navigationBarMode.value === 'default') {
+      return globalThemeStyle;
+    }
+    return currentAppConfig.value?.navigationBar?.style || statusBarStyle.value;
+  });
+
+  const isNavigationBarVisible = computed(() => navigationBarMode.value !== 'fullscreen');
   
   // Actions
+  const setLayoutConfig = (appConfig: AppConfig | null) => {
+    currentAppConfig.value = appConfig;
+  };
+
   const toggleEditMode = () => {
     isEditing.value = !isEditing.value
   }
@@ -149,64 +187,7 @@ export const useLayoutStore = defineStore('layout', () => {
   const canDropOnDock = () => {
     return layout.value.dock.length < MAX_DOCK_APPS || (draggedFrom.value?.type === 'dock')
   }
-
-  // 🔹 Reordena apps dentro da grid
-  const moveApp = (appId: string, fromPage: number, toPage: number, toIndex: number) => {
-    const fromArr = layout.value.pages[fromPage]
-    const idx = fromArr.indexOf(appId)
-    if (idx === -1) return
-
-    // Remove da página origem
-    fromArr.splice(idx, 1)
-    
-    // Adiciona na página destino
-    if (!layout.value.pages[toPage]) {
-      layout.value.pages[toPage] = []
-    }
-    layout.value.pages[toPage].splice(toIndex, 0, appId)
-    
-    // Auto-save
-    saveLayout()
-  }
-
-  // 🔹 Move app para o dock
-  const moveAppToDock = (appId: string, fromPage: number, dockIndex: number) => {
-    const fromArr = layout.value.pages[fromPage]
-    const idx = fromArr.indexOf(appId)
-    if (idx === -1) return
-
-    // Remove da página
-    fromArr.splice(idx, 1)
-    
-    // Adiciona ao dock
-    layout.value.dock.splice(dockIndex, 0, appId)
-    
-    // Limita dock a 4 apps
-    if (layout.value.dock.length > 4) {
-      const removedApp = layout.value.dock.pop()
-      if (removedApp) {
-        layout.value.pages[0].push(removedApp)
-      }
-    }
-    
-    saveLayout()
-  }
-
-  // 🔹 Move app do dock para grid
-  const moveAppFromDock = (appId: string, toPage: number, toIndex: number) => {
-    const dockIdx = layout.value.dock.indexOf(appId)
-    if (dockIdx === -1) return
-
-    // Remove do dock
-    layout.value.dock.splice(dockIdx, 1)
-    
-    // Adiciona à página
-    layout.value.pages[toPage].splice(toIndex, 0, appId)
-    
-    saveLayout()
-  }
-
-  // 🔹 Remove app do grid
+  
   const removeFromGrid = (appId: string) => {
     for (let i = 0; i < layout.value.pages.length; i++) {
       const idx = layout.value.pages[i].indexOf(appId)
@@ -218,7 +199,6 @@ export const useLayoutStore = defineStore('layout', () => {
     }
   }
 
-  // 🔹 Remove app do dock
   const removeFromDock = (appId: string) => {
     const idx = layout.value.dock.indexOf(appId)
     if (idx !== -1) {
@@ -227,46 +207,21 @@ export const useLayoutStore = defineStore('layout', () => {
     }
   }
 
-  // 🔹 Adiciona nova página se necessário
   const ensurePageExists = (pageIndex: number) => {
     while (layout.value.pages.length <= pageIndex) {
       layout.value.pages.push([])
     }
   }
 
-  // 🔹 Mock: salvar local (no futuro → API call)
   const saveLayout = async () => {
     console.log('💾 Salvando layout (mock):', JSON.stringify(layout.value))
-    
-    // Futuro: 
-    // try {
-    //   await fetch('/api/phone/layout', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       identifier: getPlayerIdentifier(), // do FiveM
-    //       layout: layout.value
-    //     })
-    //   })
-    // } catch (error) {
-    //   console.error('Erro ao salvar layout:', error)
-    // }
   }
 
-  // 🔹 Mock: carregar layout (no futuro → API call)
   const loadLayout = async (identifier?: string) => {
     loading.value = true
     try {
-      // Futuro:
-      // const response = await fetch(`/api/phone/layout?identifier=${identifier}`)
-      // if (response.ok) {
-      //   const data = await response.json()
-      //   layout.value = data.layout || mockLayout
-      // } else {
-      //   layout.value = mockLayout
-      // }
-      
-      // Mock atual
+      // Aqui você poderia carregar o layout de uma API ou localStorage
+      // Por enquanto, usamos o mock.
       layout.value = mockLayout
       console.log('📱 Layout carregado (mock):', identifier)
     } catch (error) {
@@ -274,23 +229,8 @@ export const useLayoutStore = defineStore('layout', () => {
       layout.value = mockLayout
     } finally {
       loading.value = false
+      isLayoutLoaded.value = true
     }
-  }
-
-  // 🔹 Instalar novo app (adiciona à primeira página disponível)
-  const installApp = (appId: string) => {
-    // Procura uma página com espaço (máx 8 apps por página)
-    for (let i = 0; i < layout.value.pages.length; i++) {
-      if (layout.value.pages[i].length < 8) {
-        layout.value.pages[i].push(appId)
-        saveLayout()
-        return
-      }
-    }
-    
-    // Se todas estão cheias, cria nova página
-    layout.value.pages.push([appId])
-    saveLayout()
   }
 
   return {
@@ -298,44 +238,37 @@ export const useLayoutStore = defineStore('layout', () => {
     layout,
     isEditing,
     loading,
+    isLayoutLoaded,
     currentPage,
     draggedApp,
     draggedFrom,
     
     // Constants
-    MAX_PAGES,
-    MAX_APPS_PER_PAGE,
     MAX_DOCK_APPS,
-    
-    // Getters
+
+    // Getters / Computed
     totalPages,
-    currentPageApps,
-    canAddPage,
+    isNavigationBarVisible,
+    statusBarMode,
+    statusBarStyle,
+    navigationBarMode,
+    navigationBarStyle,
     
     // Actions
+    setLayoutConfig,
     toggleEditMode,
     exitEditMode,
     nextPage,
     prevPage,
     goToPage,
-    
-    // Drag & Drop
     startDrag,
     endDrag,
     dropOnPage,
     dropOnDock,
     canDropOnPage,
     canDropOnDock,
-    
-    // Legacy actions (mantidas para compatibilidade)
-    moveApp,
-    moveAppToDock,
-    moveAppFromDock,
     removeFromGrid,
     removeFromDock,
-    ensurePageExists,
-    saveLayout,
     loadLayout,
-    installApp
   }
 })

@@ -2,14 +2,22 @@ import type { RouteRecordRaw } from 'vue-router'
 
 export type AppCategory = "system" | "store"
 
+export interface BarConfig {
+  mode: 'default' | 'overlay' | 'fullscreen';
+  style: 'light' | 'dark';
+}
+
 export interface AppConfig {
   id: string
   name: string
   icon: string
-  preinstalled: boolean // já vem no telefone?
-  removable: boolean    // pode ser removido?
-  category: AppCategory // "system" ou "store"
-  route: string         // rota principal
+  preinstalled: boolean
+  removable: boolean
+  category: AppCategory
+  route: string
+  statusBar?: Partial<BarConfig>
+  navigationBar?: Partial<BarConfig>
+  notifications?: number;
 }
 
 export interface SystemConfig {
@@ -17,7 +25,7 @@ export interface SystemConfig {
 }
 
 // Função para carregar o manifesto de um app específico
-async function loadAppManifest(appId: string): Promise<AppConfig | null> {
+export async function loadAppManifest(appId: string): Promise<AppConfig | null> {
   try {
     const manifestModule = await import(`@apps/${appId}/nui/manifest.ts`)
     return manifestModule.default || manifestModule

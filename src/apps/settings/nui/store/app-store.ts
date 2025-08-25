@@ -4,8 +4,9 @@ import { ref } from 'vue'
 export const useSettingsStore = defineStore('settings', () => {
   // State
   const phoneScale = ref(100) // Porcentagem do tamanho do telefone
-  const theme = ref<'light' | 'dark'>('dark')
+  const theme = ref<'light' | 'dark'>('light')
   const notifications = ref(true)
+  const automaticTheme = ref(false)
 
   // Actions
   const setPhoneScale = (scale: number) => {
@@ -19,11 +20,17 @@ export const useSettingsStore = defineStore('settings', () => {
   const toggleNotifications = () => {
     notifications.value = !notifications.value
   }
+  
+  const toggleAutomaticTheme = () => {
+    automaticTheme.value = !automaticTheme.value
+  }
+
 
   const resetToDefaults = () => {
     phoneScale.value = 100
     theme.value = 'dark'
     notifications.value = true
+    automaticTheme.value = false
   }
 
   return {
@@ -31,11 +38,13 @@ export const useSettingsStore = defineStore('settings', () => {
     phoneScale,
     theme,
     notifications,
+    automaticTheme,
     
     // Actions
     setPhoneScale,
     setTheme,
     toggleNotifications,
+    toggleAutomaticTheme,
     resetToDefaults
   }
 })
