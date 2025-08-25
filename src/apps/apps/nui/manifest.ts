@@ -7,7 +7,16 @@ const manifest: AppConfig = {
   preinstalled: true,
   removable: true,
   category: 'store',
-  route: '/app/apps'
+  route: '/app/apps',
+  size: 512000, // 512 KB
+  statusBar: {
+    mode: 'default',
+    style: 'light'
+  },
+  navigationBar: {
+    mode: 'default',
+    style: 'light'
+  }
 }
 
 export default manifest

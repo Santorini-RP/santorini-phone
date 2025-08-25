@@ -65,6 +65,7 @@ const onPageDragOver = (event: DragEvent, pageIndex: number) => {
   if (layoutStore.isEditing && layoutStore.draggedApp) {
     event.preventDefault();
 
+    // Só permite mudança de página se estiver na página atual
     if (pageIndex !== layoutStore.currentPage) {
       clearPageChangeTimer();
       return;
@@ -74,6 +75,7 @@ const onPageDragOver = (event: DragEvent, pageIndex: number) => {
     const rect = target.getBoundingClientRect();
     const x = event.clientX;
 
+    // Mudança de página apenas nas bordas
     if (x > rect.right - EDGE_THRESHOLD && layoutStore.currentPage < layoutStore.totalPages - 1) {
       if (!pageChangeTimeout.value) {
         pageChangeTimeout.value = window.setTimeout(() => layoutStore.nextPage(), PAGE_CHANGE_DELAY);

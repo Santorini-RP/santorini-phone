@@ -1,63 +1,82 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { getAllApps } from '@core/nui/services/appManager'
+import type { AppConfig } from '@core/nui/utils/appLoader'
+
+export interface AppStoreItem {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  provider: string;
+  compatibility: string;
+  inAppPurchases: string;
+  screenshots: string[];
+  size: number; // in bytes
+  route: string;
+}
 
 export const useAppsStore = defineStore('apps', () => {
-  // State
-  const isLoaded = ref(false)
-  const data = ref<any[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const allApps = ref<AppStoreItem[]>([])
+  const searchQuery = ref('')
+  const isLoading = ref(false)
 
-  // Actions
-  const loadData = async () => {
-    loading.value = true
-    error.value = null
+  const fetchStoreApps = () => {
+    if (allApps.value.length > 0) return; // Already loaded
+    isLoading.value = true;
     
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+    const availableApps = getAllApps();
+    
+    const storeApps = availableApps
+      .filter(app => app.category === 'store' && app.id !== 'apps')
+      .map((app: AppConfig): AppStoreItem => {
+        return {
+          id: app.id,
+          name: app.name,
+          route: app.route,
+          icon: `/src/apps/${app.id}/nui/assets/images/AppLogo.jpg`,
+          size: app.size || 0,
+          description: app.description || 'A useful application for your phone.',
+          provider: app.provider || 'LB Phone',
+          compatibility: app.compatibility || 'Works with this phone',
+          inAppPurchases: app.inAppPurchases || 'No',
+          screenshots: app.screenshots || [
+            'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/270x585/f0f0f0/333?text=Light+Mode',
+            'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/270x585/1c1c1e/eee?text=Dark+Mode'
+          ],
+        };
+      });
       
-      // Mock data
-      data.value = [
-        { id: 1, title: 'Sample Item 1' },
-        { id: 2, title: 'Sample Item 2' },
-        { id: 3, title: 'Sample Item 3' }
-      ]
-      
-      isLoaded.value = true
-    } catch (err) {
-      error.value = 'Failed to load data'
-      console.error('Error loading apps data:', err)
-    } finally {
-      loading.value = false
+    allApps.value = storeApps;
+    isLoading.value = false;
+  }
+
+  const filteredApps = computed(() => {
+    if (!searchQuery.value) {
+      return allApps.value;
     }
-  }
+    const query = searchQuery.value.toLowerCase();
+    return allApps.value.filter(app =>
+      app.name.toLowerCase().includes(query) ||
+      app.description.toLowerCase().includes(query)
+    );
+  });
 
-  const clearData = () => {
-    data.value = []
-    isLoaded.value = false
-    error.value = null
-  }
-
-  const addItem = (item: any) => {
-    data.value.push(item)
-  }
-
-  const removeItem = (id: number) => {
-    data.value = data.value.filter(item => item.id !== id)
-  }
+  const getAppById = computed(() => {
+    return (id: string) => {
+      if (allApps.value.length === 0) {
+        fetchStoreApps();
+      }
+      return allApps.value.find(app => app.id === id);
+    }
+  });
 
   return {
-    // State
-    isLoaded,
-    data,
-    loading,
-    error,
-    
-    // Actions
-    loadData,
-    clearData,
-    addItem,
-    removeItem
+    allApps,
+    searchQuery,
+    isLoading,
+    filteredApps,
+    fetchStoreApps,
+    getAppById,
   }
 })
