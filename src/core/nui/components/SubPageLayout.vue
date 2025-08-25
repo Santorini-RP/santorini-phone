@@ -1,36 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import SubPageHeader from './SubPageHeader.vue'
 
 defineProps<{
   title: string;
   previousTitle: string;
 }>();
-
-const isScrolled = ref(false);
-
-const handleScroll = (event: Event) => {
-  const target = event.target as HTMLElement;
-  isScrolled.value = target.scrollTop > 10;
-}
 </script>
 
 <template>
-  <div class="h-full flex flex-col relative">
+  <div class="h-full flex flex-col relative text-black dark:text-white">
     <SubPageHeader 
       :title="title" 
       :previous-title="previousTitle" 
-      :is-scrolled="isScrolled" 
     />
     
-    <div 
-      class="flex-1 overflow-y-auto no-scrollbar"
-      @scroll="handleScroll"
-    >
-      <div class="p-4 pt-0 space-y-4">
-        <!-- Large Header -->
-        <h1 class="text-3xl font-bold px-2">{{ title }}</h1>
-
+    <!-- O padding top garante que o conteúdo comece abaixo do header fixo -->
+    <div class="flex-1 overflow-y-auto no-scrollbar pt-[4.5rem]">
+      <div class="p-4 space-y-4">
         <!-- Content Slot -->
         <slot></slot>
 

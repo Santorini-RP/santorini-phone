@@ -34,14 +34,14 @@ defineEmits<{
     background-color: #000;
     box-shadow: 0 0 .1em .25em var(--phone-frame-color, #a7a1d1),0 0 0 .4em #d3cde4;
     z-index: 1;
-    padding: 14px;
+    padding: 8px;
     box-sizing: border-box;
 }
 
 .phone-content {
     height: 100%;
     width: 100%;
-    border-radius: 46px;
+    border-radius: 50px;
     overflow: hidden;
     position: relative;
     z-index: 2;

@@ -19,7 +19,7 @@ export async function createAppRouter(): Promise<any> {
         // Add meta information to each route to identify the parent app
         const routesWithMeta = appRouterModule.default.map((route: RouteRecordRaw) => ({
           ...route,
-          meta: { ...route.meta, appId: appId }
+          meta: { ...route.meta, appId: appId, title: route.meta?.title || appId }
         }));
         appRoutes.push(...routesWithMeta)
       }
@@ -35,7 +35,7 @@ export async function createAppRouter(): Promise<any> {
       path: '/',
       name: 'home',
       component: HomeScreen,
-      meta: { appId: 'home' } // Special case for home screen
+      meta: { appId: 'home', title: 'Home' } // Special case for home screen
     },
     ...appRoutes
   ]

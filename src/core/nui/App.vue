@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useSystemStore } from '@core/nui/store/system'
 import { useLayoutStore } from '@core/nui/store/layout'
 import { useSettingsStore } from '@apps/settings/nui/store/app-store'
@@ -10,10 +10,9 @@ import LockScreen from '@core/nui/components/LockScreen.vue'
 import HomeScreen from '@core/nui/components/HomeScreen.vue'
 import PhoneFrame from '@core/nui/components/PhoneFrame.vue'
 import NavigationBar from '@core/nui/components/NavigationBar.vue'
-import ActionSheet from '@core/nui/components/ActionSheet.vue'
+import Modal from '@core/nui/components/Modal.vue'
 import { Music } from 'lucide-vue-next'
 
-const router = useRouter()
 const route = useRoute()
 const systemStore = useSystemStore()
 const layoutStore = useLayoutStore()
@@ -74,15 +73,6 @@ const mainContainerClasses = computed(() => {
 const mainContentClasses = computed(() => {
   const classes = ['h-full', 'w-full', 'overflow-hidden'];
   if (systemStore.isLocked) return classes;
-
-  // Padding is now managed by individual page components like PageHeader
-  // or by the `noCorePadding` meta flag.
-  if (layoutStore.statusBarMode === 'default' && !route.meta.noCorePadding) {
-    classes.push('pt-10');
-  }
-  if (layoutStore.navigationBarMode === 'default' && !route.meta.noCorePadding) {
-    classes.push('pb-8');
-  }
   return classes;
 });
 
@@ -106,7 +96,7 @@ const toggleIsland = () => {
 watch(route, (newRoute) => {
   const routeMetaAppId = newRoute.meta.appId as string | undefined;
   const appConfig = getAppById(routeMetaAppId || newRoute.name as string);
-  layoutStore.setLayoutConfig(appConfig);
+  layoutStore.setLayoutConfig(appConfig || null);
 }, { immediate: true });
 
 
@@ -127,26 +117,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4 bg-gray-800">
-    <!-- iPhone 15 Container -->
-    <div ref="phoneContainerRef" class="phone-container relative w-[375px] h-[812px] drop-shadow-[0_25px_50px_rgba(0,0,0,0.8)]">
-      
+  <div class="min-h-screen flex items-center justify-center p-4 bg-zinc-800">
+    <div ref="phoneContainerRef" class="phone-container relative w-[375px] h-[812px]">
       <PhoneFrame
         @power="handlePowerButton"
         @volume-up="systemStore.adjustVolume(10)"
         @volume-down="systemStore.adjustVolume(-10)"
         @silent-switch="systemStore.toggleSilentMode()"
       >
-        <!-- Screen -->
         <div 
           class="w-full h-full bg-cover bg-center flex flex-col transition-all duration-300 relative"
           :style="[{ backgroundImage: `url(${wallpaperUrl})` }, screenStyle]"
           :class="{ 'opacity-0': !isScreenOn }"
         >
-          <!-- Purple overlay to match design -->
           <div class="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-indigo-800/70 to-black/50"></div>
-
-          <!-- Dynamic Island / Notch -->
           <div 
             v-if="isScreenOn && showDynamicIsland"
             @click="toggleIsland"
@@ -157,15 +141,12 @@ onMounted(() => {
               class="bg-black rounded-full flex items-center cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.6)] hover:bg-zinc-900"
               :class="isIslandExpanded ? 'h-[80px] p-4' : 'h-[30px]'"
             >
-              <!-- Content when collapsed -->
               <div v-if="!isIslandExpanded" class="flex items-center justify-end w-full px-2 transition-opacity duration-200">
                 <div class="w-3 h-3 rounded-full bg-blue-900/50 relative overflow-hidden">
                   <div class="absolute inset-0 bg-gradient-radial from-blue-400/50 to-transparent to-70%"></div>
                   <div class="absolute top-1/3 left-1/3 w-px h-px bg-blue-200/80 rounded-full"></div>
                 </div>
               </div>
-
-              <!-- Content when expanded -->
               <div v-else class="text-white w-full flex items-center justify-between animate-fade-in opacity-0" style="animation-delay: 200ms; animation-fill-mode: forwards;">
                 <div class="flex items-center space-x-3 overflow-hidden">
                   <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -187,15 +168,11 @@ onMounted(() => {
               </div>
             </div>
           </div>
-
-          <!-- Status Bar -->
           <StatusBar 
             v-if="isScreenOn && layoutStore.statusBarMode !== 'fullscreen'" 
             :time="currentTime"
             class="absolute top-0 left-0 right-0 z-40"
           />
-
-          <!-- Main Content -->
           <main 
             v-if="isScreenOn" 
             class="h-full w-full overflow-hidden absolute inset-0"
@@ -205,7 +182,6 @@ onMounted(() => {
               @unlock="handleUnlock"
               :time="currentTime"
             />
-            
             <div v-else :class="mainContainerClasses">
               <router-view v-slot="{ Component, route }">
                 <transition
@@ -223,19 +199,20 @@ onMounted(() => {
               </router-view>
             </div>
           </main>
-
-          <!-- Home Indicator -->
           <NavigationBar v-if="isScreenOn && !systemStore.isLocked" />
         </div>
       </PhoneFrame>
-      
-      <!-- Global Action Sheet -->
-      <ActionSheet />
+      <Modal />
     </div>
   </div>
 </template>
 
 <style>
+.phone-container {
+  transform: scale(var(--phone-scale, 1));
+  transition: transform 0.3s ease;
+}
+
 .slide-right-enter-active,
 .slide-right-leave-active,
 .slide-left-enter-active,
