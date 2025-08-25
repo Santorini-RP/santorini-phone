@@ -7,7 +7,14 @@ const manifest: AppConfig = {
   preinstalled: true,
   removable: false,
   category: 'system',
-  route: '/app/camera'
+  route: '/app/camera',
+  statusBar: {
+    mode: 'fullscreen',
+    style: 'dark' // Ignored
+  },
+  navigationBar: {
+    mode: 'fullscreen'
+  }
 }
 
 export default manifest

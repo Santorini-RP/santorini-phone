@@ -7,7 +7,8 @@ const manifest: AppConfig = {
   preinstalled: false,
   removable: true,
   category: 'store',
-  route: '/app/garage'
+  route: '/app/garage',
+  notifications: 2
 }
 
 export default manifest

@@ -7,7 +7,14 @@ const manifest: AppConfig = {
   preinstalled: true,
   removable: true,
   category: 'store',
-  route: '/app/calculator'
+  route: '/app/calculator',
+  statusBar: {
+    mode: 'overlay',
+    style: 'dark'
+  },
+  navigationBar: {
+    mode: 'overlay'
+  }
 }
 
 export default manifest

@@ -1,34 +1,50 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
-import { loadSystemConfig, generateAppRoutes } from '@core/nui/utils/appLoader'
+import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
+import { loadSystemConfig } from '@core/nui/utils/appLoader'
+import HomeScreen from '@core/nui/components/HomeScreen.vue'
 
-// Rotas base do sistema
-const baseRoutes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    name: 'home',
-    component: () => import('@core/nui/components/HomeScreen.vue')
+/**
+ * Creates and configures the Vue Router instance.
+ * This function is called from main.ts AFTER the appManager is initialized.
+ */
+export async function createAppRouter(): Promise<any> {
+  const systemConfig = await loadSystemConfig()
+  const enabledApps = systemConfig.apps || []
+  const appRoutes: RouteRecordRaw[] = []
+
+  // Dynamically import routes from each enabled application
+  for (const appId of enabledApps) {
+    try {
+      const appRouterModule = await import(`../../../apps/${appId}/nui/router/index.ts`)
+      if (appRouterModule.default) {
+        // Add meta information to each route to identify the parent app
+        const routesWithMeta = appRouterModule.default.map((route: RouteRecordRaw) => ({
+          ...route,
+          meta: { ...route.meta, appId: appId }
+        }));
+        appRoutes.push(...routesWithMeta)
+      }
+    } catch (e) {
+      // It's okay if an app doesn't have a router file, just warn.
+      // console.warn(`Could not load routes for app: ${appId}`, e)
+    }
   }
-]
 
-// Função para criar o router com rotas dinâmicas
-async function createAppRouter() {
-  const routes = [...baseRoutes]
-  
-  try {
-    // Carregar configuração e gerar rotas dos apps
-    const config = await loadSystemConfig()
-    const appRoutes = await generateAppRoutes(config.apps || [])
-    routes.push(...appRoutes)
-  } catch (error) {
-    console.warn('Erro ao carregar rotas dos apps:', error)
-  }
+  // Define the base routes for the OS
+  const routes: RouteRecordRaw[] = [
+    {
+      path: '/',
+      name: 'home',
+      component: HomeScreen,
+      meta: { appId: 'home' } // Special case for home screen
+    },
+    ...appRoutes
+  ]
 
-  return createRouter({
-    history: createWebHistory(),
+  // Create the router instance
+  const router = createRouter({
+    history: createWebHashHistory(),
     routes
   })
-}
 
-// Exportar uma promise do router para uso no main.ts
-export default createAppRouter()
+  return router
+}

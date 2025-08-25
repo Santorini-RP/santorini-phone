@@ -7,7 +7,8 @@ const manifest: AppConfig = {
   preinstalled: false,
   removable: true,
   category: 'store',
-  route: '/app/trendy'
+  route: '/app/trendy',
+  notifications: 1
 }
 
 export default manifest

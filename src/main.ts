@@ -2,14 +2,18 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import './style.css'
 import App from '@core/nui/App.vue'
-import routerPromise from '@core/nui/router'
+import { createAppRouter } from '@core/nui/router'
+import { initializeAppManager } from '@core/nui/services/appManager'
 
 async function initApp() {
+  // 1. Inicializa o gerenciador de apps antes de tudo
+  await initializeAppManager()
+
+  // 2. Cria o router APÓS o appManager estar pronto
+  const router = await createAppRouter()
+  
   const app = createApp(App)
   const pinia = createPinia()
-  
-  // Aguardar o router ser criado com as rotas dinâmicas
-  const router = await routerPromise
   
   app.use(pinia)
   app.use(router)

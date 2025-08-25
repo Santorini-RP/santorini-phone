@@ -1,61 +1,96 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { Globe, AlarmClock, Timer, Hourglass } from 'lucide-vue-next'
 
-const router = useRouter()
+const activeTab = ref('Timer')
+const tabs = [
+  { name: 'World Clock', icon: Globe },
+  { name: 'Alarm', icon: AlarmClock },
+  { name: 'Stopwatch', icon: Hourglass },
+  { name: 'Timer', icon: Timer },
+]
 
-const goBack = () => {
-  router.push('/')
+const selectedTime = ref({
+  hours: 0,
+  minutes: 0,
+  seconds: 0,
+})
+
+const isTimerRunning = ref(false)
+
+const startTimer = () => {
+  isTimerRunning.value = true
+}
+
+const cancelTimer = () => {
+  isTimerRunning.value = false
+  selectedTime.value = { hours: 0, minutes: 0, seconds: 0 }
 }
 </script>
 
 <template>
-  <div class="h-full bg-gradient-to-br from-gray-900 to-black text-white flex flex-col">
+  <div class="h-full text-black flex flex-col font-sans">
     <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-800">
-      <button 
-        @click="goBack"
-        class="text-blue-400 text-lg hover:text-blue-300 transition-colors"
-      >
-        ← Back
-      </button>
-      <h1 class="text-lg font-semibold">Clock</h1>
-      <div class="w-12"></div>
+    <div class="px-4 pt-4 pb-2">
+      <h1 class="text-3xl font-bold">Timer</h1>
     </div>
 
-    <!-- App Content -->
-    <div class="flex-1 flex flex-col items-center justify-center p-8">
-      <div class="text-center space-y-6">
-        <!-- App Icon -->
-        <div class="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-4xl shadow-2xl">
-          🕐
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col items-center justify-around p-4">
+      <!-- Time Picker -->
+      <div class="flex justify-center items-center w-full text-center text-5xl font-thin -mt-8">
+        <div class="w-28">
+          <div class="text-base text-gray-500 font-normal">Hours</div>
+          <div class="mt-4">{{ selectedTime.hours }}</div>
         </div>
-        
-        <!-- App Info -->
-        <div class="space-y-2">
-          <h2 class="text-2xl font-bold">Clock</h2>
-          <p class="text-gray-400">Time APP_DESCRIPTION Alarms</p>
+        <div class="w-28">
+          <div class="text-base text-gray-500 font-normal">Minutes</div>
+          <div class="mt-4">{{ selectedTime.minutes }}</div>
         </div>
-        
-        <!-- Coming Soon -->
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 rounded-full">
-          <span class="text-white font-semibold">Em Breve</span>
+        <div class="w-28">
+          <div class="text-base text-gray-500 font-normal">Seconds</div>
+          <div class="mt-4">{{ selectedTime.seconds }}</div>
         </div>
-        
-        <!-- Features List -->
-        <div class="mt-8 space-y-3 text-left max-w-sm">
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span class="text-gray-300">Interface moderna e intuitiva</span>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span class="text-gray-300">Funcionalidades avançadas</span>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span class="text-gray-300">Integração com sistema</span>
-          </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-around items-center w-full">
+        <button 
+          @click="cancelTimer"
+          class="w-20 h-20 rounded-full bg-gray-300/70 text-black text-lg font-medium flex items-center justify-center transition-colors hover:bg-gray-400/70"
+        >
+          Cancel
+        </button>
+        <button 
+          @click="startTimer"
+          class="w-20 h-20 rounded-full bg-green-500 text-white text-lg font-medium flex items-center justify-center transition-colors hover:bg-green-600"
+        >
+          Start
+        </button>
+      </div>
+
+      <!-- Recents -->
+      <div class="w-full">
+        <h2 class="text-xl font-bold mb-2 px-2">Recents</h2>
+        <div class="bg-white rounded-xl p-4 text-center text-gray-500">
+          No Recents
         </div>
+      </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="bg-gray-200/70 backdrop-blur-md border-t border-gray-300/50 px-4 pt-2 pb-4">
+      <div class="flex justify-around">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.name"
+          @click="activeTab = tab.name"
+          class="flex flex-col items-center space-y-1 transition-colors"
+          :class="activeTab === tab.name ? 'text-orange-500' : 'text-gray-500 hover:text-gray-700'"
+        >
+          <component :is="tab.icon" class="w-6 h-6" />
+          <span class="text-xs font-medium">{{ tab.name }}</span>
+        </button>
       </div>
     </div>
   </div>
