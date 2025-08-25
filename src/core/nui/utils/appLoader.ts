@@ -15,6 +15,7 @@ export interface AppConfig {
   removable: boolean
   category: AppCategory
   route: string
+  size?: number; // App size in bytes
   statusBar?: Partial<BarConfig>
   navigationBar?: Partial<BarConfig>
   notifications?: number;

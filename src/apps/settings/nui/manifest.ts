@@ -8,6 +8,7 @@ const manifest: AppConfig = {
   removable: false,
   category: 'system',
   route: '/app/settings',
+  size: 2048000, // 2 MB
   statusBar: {
     mode: 'default',
     style: 'light'

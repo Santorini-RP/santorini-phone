@@ -8,6 +8,7 @@ const manifest: AppConfig = {
   removable: true,
   category: 'store',
   route: '/app/calculator',
+  size: 512000, // 512 KB
   statusBar: {
     mode: 'overlay',
     style: 'dark'

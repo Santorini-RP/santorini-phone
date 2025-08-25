@@ -2,12 +2,17 @@
 
 Esta pasta contém os wallpapers que podem ser usados como fundo de tela do telefone.
 
-## 🎨 Wallpaper Atual
+## 🎨 Wallpapers Disponíveis
 
-- **Arquivo**: `cloud8.jpg`
-- **Descrição**: O wallpaper padrão é uma imagem de nuvens. Para corresponder a designs específicos, uma sobreposição de gradiente de cor é aplicada sobre esta imagem no componente `App.vue`.
-- **Localização**: `/src/core/nui/assets/images/backgrounds/cloud8.jpg`
+- `w1.png`
+- `w2.png`
+- `w3.png`
+- `w4.png`
+- `w5.png`
+- `w6.png`
+- `w7.png`
+- `w8.png`
 
 ## 🔧 Como Funciona
 
-O wallpaper é aplicado no componente principal (`App.vue`). Você pode substituir o arquivo `cloud8.jpg` por qualquer outra imagem para alterar o fundo de tela. A sobreposição de cor garantirá que a tonalidade geral permaneça consistente com o tema do sistema.
+O wallpaper é definido no `systemStore` (`src/core/nui/store/system.ts`) e aplicado no componente principal (`App.vue`). Para adicionar ou alterar wallpapers, modifique o array `availableWallpapers` no store e adicione os arquivos de imagem correspondentes a esta pasta.

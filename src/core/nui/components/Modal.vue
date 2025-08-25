@@ -14,9 +14,7 @@ const getButtonClass = (button: ModalButton) => {
   }
 };
 
-// Use the same logic as ActionSheet for handling clicks
 const handleBackgroundClick = () => {
-  // Find if there's a cancel button to simulate its action
   const cancelButton = modalStore.buttons.find(b => b.style === 'cancel');
   if (cancelButton) {
     modalStore.handleButtonClick(cancelButton.id);
@@ -41,14 +39,28 @@ const handleBackgroundClick = () => {
             <h3 class="font-bold text-lg text-black dark:text-white">{{ modalStore.title }}</h3>
             <p v-if="modalStore.message" class="text-sm mt-1 text-black/90 dark:text-white/90 whitespace-pre-line">{{ modalStore.message }}</p>
           </div>
-          <!-- Actions -->
-          <div class="flex flex-col border-t border-gray-400/40 dark:border-gray-600/60">
+          <!-- Actions: Layout adapts to button count (iOS style) -->
+          <div
+            class="border-t border-gray-400/40 dark:border-gray-600/60"
+            :class="{
+              'flex': modalStore.buttons.length <= 2,
+              'flex flex-col': modalStore.buttons.length > 2
+            }"
+          >
             <button
-              v-for="button in modalStore.buttons"
+              v-for="(button, index) in modalStore.buttons"
               :key="button.id"
               @click="modalStore.handleButtonClick(button.id)"
-              class="w-full py-3 text-lg transition-colors duration-100 border-t border-gray-400/40 dark:border-gray-600/60 first:border-t-0"
-              :class="getButtonClass(button)"
+              class="py-3 text-lg transition-colors duration-100"
+              :class="[
+                getButtonClass(button),
+                // Horizontal layout for 1-2 buttons
+                { 'flex-1': modalStore.buttons.length <= 2 },
+                { 'border-l border-gray-400/40 dark:border-gray-600/60': modalStore.buttons.length === 2 && index > 0 },
+                // Vertical layout for 3+ buttons
+                { 'w-full': modalStore.buttons.length > 2 },
+                { 'border-t border-gray-400/40 dark:border-gray-600/60': modalStore.buttons.length > 2 && index > 0 }
+              ]"
             >
               {{ button.text }}
             </button>
