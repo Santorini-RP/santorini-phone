@@ -22,7 +22,7 @@ const isScreenOn = ref(true)
 const showDynamicIsland = ref(false)
 const isIslandExpanded = ref(false)
 
-const wallpaperUrl = '/src/core/nui/assets/images/backgrounds/cloud8.jpg'
+const wallpaperUrl = computed(() => systemStore.currentWallpaper.url)
 
 const currentTime = computed(() => {
   const now = new Date()

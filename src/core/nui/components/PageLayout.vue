@@ -36,7 +36,11 @@ const backRouteTitle = computed(() => {
       <SubPageHeader 
         :title="pageTitle" 
         :previous-title="backRouteTitle"
-      />
+      >
+        <template #actions>
+          <slot name="header-actions"></slot>
+        </template>
+      </SubPageHeader>
     </template>
     <template v-else>
       <PageHeader 

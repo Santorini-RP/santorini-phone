@@ -7,6 +7,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const theme = ref<'light' | 'dark'>('light')
   const notifications = ref(true)
   const automaticTheme = ref(false)
+  const blurHomescreen = ref(false)
 
   // Actions
   const setPhoneScale = (scale: number) => {
@@ -25,12 +26,17 @@ export const useSettingsStore = defineStore('settings', () => {
     automaticTheme.value = !automaticTheme.value
   }
 
+  const toggleBlurHomescreen = () => {
+    blurHomescreen.value = !blurHomescreen.value
+  }
+
 
   const resetToDefaults = () => {
     phoneScale.value = 100
     theme.value = 'dark'
     notifications.value = true
     automaticTheme.value = false
+    blurHomescreen.value = false
   }
 
   return {
@@ -39,12 +45,14 @@ export const useSettingsStore = defineStore('settings', () => {
     theme,
     notifications,
     automaticTheme,
+    blurHomescreen,
     
     // Actions
     setPhoneScale,
     setTheme,
     toggleNotifications,
     toggleAutomaticTheme,
+    toggleBlurHomescreen,
     resetToDefaults
   }
 })
