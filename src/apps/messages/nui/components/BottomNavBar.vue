@@ -1,25 +1,33 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { CircleDot, Phone, Users, MessageSquare, Settings } from 'lucide-vue-next';
 
-const tabs = ref([
-  { name: 'Updates', icon: CircleDot, active: false, hasBadge: false, badgeCount: 0 },
-  { name: 'Calls', icon: Phone, active: false, hasBadge: false, badgeCount: 0 },
-  { name: 'Communities', icon: Users, active: false, hasBadge: false, badgeCount: 0 },
-  { name: 'Chats', icon: MessageSquare, active: true, hasBadge: true, badgeCount: 1 },
-  { name: 'Settings', icon: Settings, active: false, hasBadge: false, badgeCount: 0 },
+const route = useRoute();
+const router = useRouter();
+
+const tabs = computed(() => [
+  { name: 'Updates', icon: CircleDot, path: '/app/messages/updates', active: route.name === 'messages-updates' },
+  { name: 'Calls', icon: Phone, path: '/app/messages/calls', active: route.name === 'messages-calls' },
+  { name: 'Communities', icon: Users, path: '/app/messages/communities', active: route.name === 'messages-communities' },
+  { name: 'Chats', icon: MessageSquare, path: '/app/messages', active: route.name === 'messages-list', hasBadge: true, badgeCount: 1 },
+  { name: 'Settings', icon: Settings, path: '/app/messages/settings', active: route.name === 'messages-settings' },
 ]);
+
+const navigateTo = (path: string) => {
+  router.push(path);
+};
 </script>
 
 <template>
-  <div class="w-full bg-[#F4F4F4cc] backdrop-blur-lg border-t border-[#0A0A0A08]">
+  <div class="w-full bg-[#F4F4F4cc] mb-6 backdrop-blur-lg border-t border-[#0A0A0A08]">
     <div class="flex justify-around items-center pt-1.5 pb-1">
-      <button v-for="tab in tabs" :key="tab.name" class="flex flex-col items-center justify-center space-y-0.5 w-16 h-12 relative">
+      <button v-for="tab in tabs" :key="tab.name" @click="navigateTo(tab.path)" class="flex flex-col items-center justify-center space-y-0.5 w-16 h-12 relative">
         <component
           :is="tab.icon"
           class="w-6 h-6 transition-colors"
           :class="tab.active ? 'text-[#0A0A0A]' : 'text-[#767779]'"
-          :fill="tab.active && tab.name === 'Chats' ? '#0A0A0A' : 'none'"
+          :fill="tab.active && (tab.name === 'Chats' || tab.name === 'Settings') ? '#0A0A0A' : 'none'"
         />
         <span
           class="text-[10px] font-medium transition-colors"
@@ -34,9 +42,6 @@ const tabs = ref([
           {{ tab.badgeCount }}
         </div>
       </button>
-    </div>
-    <div class="flex justify-center pb-2">
-      <div class="w-[140px] h-[5px] bg-[#0A0A0A] rounded-full"></div>
     </div>
   </div>
 </template>

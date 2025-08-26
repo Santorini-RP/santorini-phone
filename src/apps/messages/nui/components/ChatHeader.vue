@@ -3,13 +3,20 @@ import { useRouter } from 'vue-router';
 import type { Contact, GroupInfo } from '../store/chatStore';
 import { ChevronLeft, Video, Phone, Users } from 'lucide-vue-next';
 
-defineProps<{
+const props = defineProps<{
   contact: Contact | null,
   groupInfo: GroupInfo | null
 }>();
 
 const router = useRouter();
 const goBack = () => router.back();
+
+const goToContactInfo = () => {
+  if (props.contact) {
+    router.push(`/app/messages/${props.contact.id}/info`);
+  }
+  // Could add group info navigation later
+};
 </script>
 
 <template>
@@ -23,7 +30,7 @@ const goBack = () => router.back();
         </button>
         
         <!-- One-on-One Chat Info -->
-        <div v-if="contact" class="flex items-center ml-2">
+        <div v-if="contact" @click="goToContactInfo" class="flex items-center ml-2 cursor-pointer">
           <img :src="contact.avatarUrl" :alt="contact.name" class="w-9 h-9 rounded-full object-cover" />
           <div class="ml-2">
             <p class="font-semibold text-base text-[#0A0A0A] leading-tight">{{ contact.name }}</p>

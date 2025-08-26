@@ -15,7 +15,7 @@ const getButtonClass = (option: ActionSheetOption) => {
   <transition name="fade">
     <div
       v-if="actionSheetStore.isVisible"
-      class="fixed inset-0 bg-black/40 z-[100] flex items-end justify-center p-2"
+      class="fixed inset-0 bg-black/40 z-[150] flex items-end justify-center p-2"
       @click.self="actionSheetStore.handleCancel"
     >
       <transition name="slide-up">

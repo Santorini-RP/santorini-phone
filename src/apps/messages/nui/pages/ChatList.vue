@@ -2,58 +2,23 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessagesStore } from '../store/messagesStore';
+import { useMessagesUiStore } from '../store/uiStore';
 import ChatListItem from '../components/ChatListItem.vue';
-import BottomNavBar from '../components/BottomNavBar.vue';
-import ChatSelectionFooter from '../components/ChatSelectionFooter.vue';
 import SearchInput from '@core/nui/components/SearchInput.vue';
 import { Camera, Plus, Archive } from 'lucide-vue-next';
 
 const messagesStore = useMessagesStore();
+const uiStore = useMessagesUiStore();
 const router = useRouter();
+
 const activeFilter = ref('All');
 const searchQuery = ref('');
 const filters = ['All', 'Unread', 'Favourites', 'Groups'];
 
-const isSelectionMode = ref(false);
-const selectedChats = ref<number[]>([]);
-
 const unarchivedChats = computed(() => messagesStore.chats.filter(c => !c.isArchived));
 const hasArchivedChats = computed(() => messagesStore.chats.some(c => c.isArchived));
 
-const isAnythingSelected = computed(() => selectedChats.value.length > 0);
-const selectedCount = computed(() => selectedChats.value.length);
-const headerTitle = computed(() => isSelectionMode.value ? `${selectedCount.value} Selected` : 'Chats');
-
-const toggleSelectionMode = () => {
-  isSelectionMode.value = !isSelectionMode.value;
-  if (!isSelectionMode.value) {
-    selectedChats.value = []; // Limpa a seleção ao sair do modo
-  }
-};
-
-const toggleSelection = (chatId: number) => {
-  const index = selectedChats.value.indexOf(chatId);
-  if (index > -1) {
-    selectedChats.value.splice(index, 1);
-  } else {
-    selectedChats.value.push(chatId);
-  }
-};
-
-const handleArchive = () => {
-  alert(`Arquivando ${selectedCount.value} conversas.`);
-  toggleSelectionMode();
-};
-
-const handleRead = () => {
-  alert(`Marcando ${selectedCount.value} conversas como lidas.`);
-  toggleSelectionMode();
-};
-
-const handleDelete = () => {
-  alert(`Apagando ${selectedCount.value} conversas.`);
-  toggleSelectionMode();
-};
+const headerTitle = computed(() => uiStore.isSelectionMode ? `${uiStore.selectedCount} Selected` : 'Chats');
 </script>
 
 <template>
@@ -62,11 +27,11 @@ const handleDelete = () => {
     <header class="pt-12 pb-2 px-4 bg-white sticky top-0 z-10">
       <div class="flex items-center h-9">
         <div class="flex-1 flex justify-start">
-          <button v-if="!isSelectionMode" @click="toggleSelectionMode" class="text-lg text-[#0A0A0A] px-2">Edit</button>
+          <button v-if="!uiStore.isSelectionMode" @click="uiStore.toggleSelectionMode" class="text-lg text-[#0A0A0A] px-2">Edit</button>
         </div>
         <div class="flex-1 flex justify-end">
-          <button v-if="isSelectionMode" @click="toggleSelectionMode" class="text-lg text-[#0A0A0A] px-2 font-semibold">Done</button>
-          <div v-if="!isSelectionMode" class="flex items-center space-x-4">
+          <button v-if="uiStore.isSelectionMode" @click="uiStore.toggleSelectionMode" class="text-lg text-[#0A0A0A] px-2 font-semibold">Done</button>
+          <div v-if="!uiStore.isSelectionMode" class="flex items-center space-x-4">
             <button class="p-1.5 bg-[#0A0A0A08] rounded-full text-[#0A0A0A]"><Camera class="w-5 h-5" /></button>
             <button class="p-1.5 bg-[#1DAB61] rounded-full text-white"><Plus class="w-5 h-5" /></button>
           </div>
@@ -75,13 +40,13 @@ const handleDelete = () => {
       
       <h1 class="text-3xl font-bold text-[#0A0A0A] mt-2">{{ headerTitle }}</h1>
       
-      <div v-if="!isSelectionMode" class="mt-3">
+      <div v-if="!uiStore.isSelectionMode" class="mt-3">
         <SearchInput v-model="searchQuery" placeholder="Search" />
       </div>
     </header>
 
     <!-- Main Content (Scrollable) -->
-    <main class="flex-1 flex flex-col overflow-y-auto">
+    <div class="flex-1 flex flex-col overflow-y-auto">
       <!-- Filters (Horizontally scrollable) -->
       <div class="px-4 py-3 bg-white">
         <div class="flex space-x-2 items-center overflow-x-auto no-scrollbar">
@@ -90,15 +55,15 @@ const handleDelete = () => {
             :key="filter"
             @click="activeFilter = filter"
             class="px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors flex-shrink-0"
-            :disabled="isSelectionMode"
-            :class="isSelectionMode 
+            :disabled="uiStore.isSelectionMode"
+            :class="uiStore.isSelectionMode 
               ? 'bg-[#F4F4F4] text-[#BDBDBD]' 
               : activeFilter === filter ? 'bg-[#D0FECF] text-[#15603E]' : 'bg-[#F4F4F4] text-[#767779]'"
           >
             {{ filter }}
           </button>
-          <button class="w-8 h-8 flex-shrink-0 bg-[#F4F4F4] rounded-full flex items-center justify-center" :disabled="isSelectionMode">
-            <Plus class="w-4 h-4" :class="isSelectionMode ? 'text-[#BDBDBD]' : 'text-[#767779]'" />
+          <button class="w-8 h-8 flex-shrink-0 bg-[#F4F4F4] rounded-full flex items-center justify-center" :disabled="uiStore.isSelectionMode">
+            <Plus class="w-4 h-4" :class="uiStore.isSelectionMode ? 'text-[#BDBDBD]' : 'text-[#767779]'" />
           </button>
         </div>
       </div>
@@ -107,37 +72,25 @@ const handleDelete = () => {
       <div class="flex flex-col">
         <div 
             v-if="hasArchivedChats"
-            @click="!isSelectionMode && router.push('/app/messages/archived')"
+            @click="!uiStore.isSelectionMode && router.push('/app/messages/archived')"
             class="flex items-center space-x-3 py-2.5 px-4"
             :class="{ 
-              'text-[#0A0A0A] font-semibold cursor-pointer hover:bg-gray-50 transition-colors': !isSelectionMode,
-              'text-gray-400': isSelectionMode
+              'text-[#0A0A0A] font-semibold cursor-pointer hover:bg-gray-50 transition-colors': !uiStore.isSelectionMode,
+              'text-gray-400': uiStore.isSelectionMode
             }"
         >
-            <Archive class="w-5 h-5" :class="isSelectionMode ? 'text-gray-400' : 'text-[#767779]'" />
+            <Archive class="w-5 h-5" :class="uiStore.isSelectionMode ? 'text-gray-400' : 'text-[#767779]'" />
             <span>Archived</span>
         </div>
         <ChatListItem 
           v-for="chat in unarchivedChats" 
           :key="chat.id" 
           :chat="chat"
-          :is-selection-mode="isSelectionMode"
-          :is-selected="selectedChats.includes(chat.id)"
-          @toggle-selection="toggleSelection(chat.id)"
+          :is-selection-mode="uiStore.isSelectionMode"
+          :is-selected="uiStore.selectedChatIds.includes(chat.id)"
+          @toggle-selection="uiStore.toggleSelection(chat.id)"
         />
       </div>
-    </main>
-
-    <!-- Bottom Navigation -->
-    <footer class="sticky bottom-0 z-10">
-      <ChatSelectionFooter
-        v-if="isSelectionMode"
-        :disabled="!isAnythingSelected"
-        @archive="handleArchive"
-        @read="handleRead"
-        @delete="handleDelete"
-      />
-      <BottomNavBar v-else />
-    </footer>
+    </div>
   </div>
 </template>

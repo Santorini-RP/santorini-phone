@@ -135,7 +135,7 @@ onMounted(() => {
           <div 
             v-if="isScreenOn && showDynamicIsland"
             @click="toggleIsland"
-            class="absolute top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)]"
+            class="absolute top-3 left-1/2 -translate-x-1/2 z-[200] transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)]"
             :class="isIslandExpanded ? 'w-[90%]' : 'w-[120px]'"
           >
             <div 

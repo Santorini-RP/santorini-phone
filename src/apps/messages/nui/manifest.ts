@@ -12,9 +12,6 @@ const manifest: AppConfig = {
     mode: 'default',
     style: 'light'
   },
-  navigationBar: {
-    mode: 'fullscreen'
-  }
 }
 
 export default manifest
