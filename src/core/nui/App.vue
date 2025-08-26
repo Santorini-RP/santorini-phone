@@ -11,6 +11,7 @@ import HomeScreen from '@core/nui/components/HomeScreen.vue'
 import PhoneFrame from '@core/nui/components/PhoneFrame.vue'
 import NavigationBar from '@core/nui/components/NavigationBar.vue'
 import Modal from '@core/nui/components/Modal.vue'
+import ActionSheet from '@core/nui/components/ActionSheet.vue'
 import { Music } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -203,6 +204,7 @@ onMounted(() => {
         </div>
       </PhoneFrame>
       <Modal />
+      <ActionSheet />
     </div>
   </div>
 </template>

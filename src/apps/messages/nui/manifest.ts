@@ -7,7 +7,14 @@ const manifest: AppConfig = {
   preinstalled: true,
   removable: false,
   category: 'system',
-  route: '/app/messages'
+  route: '/app/messages',
+  statusBar: {
+    mode: 'default',
+    style: 'light'
+  },
+  navigationBar: {
+    mode: 'fullscreen'
+  }
 }
 
 export default manifest
