@@ -26,7 +26,7 @@ const togglePanel = () => {
 </script>
 
 <template>
-  <footer class="sticky bottom-0 z-20 bg-[#F5F2EBcc] backdrop-blur-lg">
+  <footer class="sticky bottom-0 z-20 bg-[#F5F2EBcc] backdrop-blur-lg pt-6 pb-6">
     <div class="flex items-end space-x-2 px-3 py-1.5">
       <button @click="togglePanel" class="w-8 h-8 flex items-center justify-center text-[#0A0A0A] mb-0.5 transition-transform duration-300">
         <Keyboard v-if="isPanelOpen" class="w-7 h-7" />
@@ -80,9 +80,5 @@ const togglePanel = () => {
         <MediaOptionsPanel />
       </div>
     </transition>
-
-    <div v-if="!isPanelOpen" class="flex justify-center pt-2 pb-2">
-      <div class="w-[140px] h-[5px] bg-[#0A0A0A] rounded-full"></div>
-    </div>
   </footer>
 </template>
