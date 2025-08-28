@@ -7,7 +7,11 @@ const manifest: AppConfig = {
   preinstalled: true,
   removable: false,
   category: 'system',
-  route: '/app/weather'
+  route: '/app/weather',
+  statusBar: {
+    mode: 'fullscreen',
+    style: 'dark'
+  }
 }
 
 export default manifest

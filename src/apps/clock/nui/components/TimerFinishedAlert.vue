@@ -5,7 +5,7 @@ defineEmits(['stop', 'restart']);
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-black/40 backdrop-blur-xl z-[200] flex flex-col justify-between items-center text-white p-8 pb-20 animate-fade-in">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-xl z-[200] flex flex-col justify-between items-center text-white p-8 pb-20 animate-fade-in">
     <div class="flex-1 flex items-center justify-center">
       <h1 class="text-6xl font-bold">Timer</h1>
     </div>

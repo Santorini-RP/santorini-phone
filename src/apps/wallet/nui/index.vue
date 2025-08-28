@@ -1,62 +1,74 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useWalletStore } from './store/app-store';
+import PageLayout from '@core/nui/components/PageLayout.vue';
+import { useRouter } from 'vue-router';
 
-const router = useRouter()
+const walletStore = useWalletStore();
+const router = useRouter();
 
-const goBack = () => {
-  router.push('/')
-}
+const goToSendPage = () => {
+  router.push('/app/wallet/send');
+};
 </script>
 
 <template>
-  <div class="h-full bg-gradient-to-br from-gray-900 to-black text-white flex flex-col">
-    <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-800">
-      <button 
-        @click="goBack"
-        class="text-blue-400 text-lg hover:text-blue-300 transition-colors"
-      >
-        ← Back
-      </button>
-      <h1 class="text-lg font-semibold">Wallet</h1>
-      <div class="w-12"></div>
-    </div>
+  <PageLayout page-title="Wallet">
+    <div class="p-4 space-y-6">
+      <!-- Debit Card -->
+      <div class="aspect-[1.58/1] rounded-2xl p-6 flex flex-col justify-between text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-red-500">
+        <div class="flex justify-end">
+          <div class="text-right">
+            <p class="font-bold text-xl">LB</p>
+            <p class="text-xs -mt-1 opacity-80">DEBIT</p>
+          </div>
+        </div>
+        <div>
+          <p class="font-mono text-xl tracking-widest">···· ···· ···· {{ walletStore.cardDetails.last4 }}</p>
+          <p class="text-right text-sm opacity-80 mt-1">VALID THRU {{ walletStore.cardDetails.expiry }}</p>
+        </div>
+      </div>
 
-    <!-- App Content -->
-    <div class="flex-1 flex flex-col items-center justify-center p-8">
-      <div class="text-center space-y-6">
-        <!-- App Icon -->
-        <div class="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-4xl shadow-2xl">
-          💳
+      <!-- Balance Card -->
+      <div class="bg-white rounded-2xl p-4 flex justify-between items-center">
+        <div>
+          <p class="text-gray-500">Balance</p>
+          <p class="text-3xl font-bold text-black">{{ walletStore.formattedBalance }}</p>
         </div>
-        
-        <!-- App Info -->
-        <div class="space-y-2">
-          <h2 class="text-2xl font-bold">Wallet</h2>
-          <p class="text-gray-400">Digital Wallet</p>
+        <button @click="goToSendPage" class="bg-black text-white rounded-full px-6 py-2 font-semibold hover:bg-gray-800 transition-colors">
+          Send
+        </button>
+      </div>
+
+      <!-- Transactions List -->
+      <div>
+        <div class="flex justify-between items-center mb-2 px-2">
+          <h2 class="text-lg font-bold text-black">Latest Transactions</h2>
+          <button @click="router.push('/app/wallet/transactions')" class="text-sm text-blue-500 font-medium">All Transactions ></button>
         </div>
-        
-        <!-- Coming Soon -->
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 rounded-full">
-          <span class="text-white font-semibold">Em Breve</span>
-        </div>
-        
-        <!-- Features List -->
-        <div class="mt-8 space-y-3 text-left max-w-sm">
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span class="text-gray-300">Interface moderna e intuitiva</span>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span class="text-gray-300">Funcionalidades avançadas</span>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span class="text-gray-300">Integração com sistema</span>
+        <div class="bg-white rounded-2xl">
+          <div 
+            v-for="(transaction, index) in walletStore.transactions.slice(0, 3)" 
+            :key="transaction.id"
+            class="flex items-center p-3"
+            :class="{ 'border-b border-gray-200/80': index < walletStore.transactions.slice(0, 3).length - 1 }"
+          >
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold mr-4" :class="transaction.iconBg">
+              <img v-if="transaction.iconUrl" :src="transaction.iconUrl" :alt="transaction.name" class="w-full h-full object-contain p-1.5" />
+              <span v-else>{{ transaction.initials }}</span>
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold text-black">{{ transaction.name }}</p>
+              <p class="text-sm text-gray-500">{{ transaction.time }}</p>
+            </div>
+            <span 
+              class="font-semibold"
+              :class="transaction.type === 'debit' ? 'text-red-500' : 'text-green-500'"
+            >
+              {{ walletStore.formatTransactionAmount(transaction.amount, transaction.type) }}
+            </span>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </PageLayout>
 </template>

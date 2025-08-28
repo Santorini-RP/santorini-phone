@@ -28,8 +28,6 @@ const currentDate = computed(() => {
   }).replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
 })
 
-const pinDisplay = computed(() => '●'.repeat(systemStore.enteredPin.length))
-
 useSwipe(lockScreenRef, {
   onSwipeEnd: (e, direction) => {
     if (direction === 'up') {
@@ -61,16 +59,16 @@ const handleDelete = () => {
 <template>
   <div ref="lockScreenRef" class="h-full flex flex-col text-white overflow-hidden relative" @click.self="showPinPad = true">
     
-    <!-- Main Lock Screen Content (Notifications View) -->
-    <div class="flex-1 flex flex-col justify-between p-4 pt-12 relative z-10">
+    <!-- Main Lock Screen Content -->
+    <div class="flex-1 flex flex-col p-4 pt-24 relative z-10">
       <!-- Time and Date -->
-      <div class="text-center pt-8">
-        <h1 class="text-8xl font-bold tracking-tight">{{ time }}</h1>
-        <p class="text-xl font-medium opacity-80 mt-1">{{ currentDate }}</p>
+      <div class="text-center mb-12">
+        <h1 class="text-8xl font-semibold tracking-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]">{{ time }}</h1>
+        <p class="text-xl font-medium opacity-90 mt-1 [text-shadow:0_1px_4px_rgba(0,0,0,0.5)]">{{ currentDate }}</p>
       </div>
       
       <!-- Notifications -->
-      <div class="w-full space-y-3 overflow-y-auto max-h-[45vh] no-scrollbar px-2">
+      <div class="flex-1 w-full space-y-3 overflow-y-auto no-scrollbar px-2">
         <NotificationItem 
           v-for="notification in notificationStore.notifications" 
           :key="notification.id"
@@ -79,7 +77,7 @@ const handleDelete = () => {
       </div>
       
       <!-- Bottom Actions -->
-      <div class="flex justify-between items-center px-8 pb-10">
+      <div class="flex-shrink-0 flex justify-between items-center px-8 pt-4 pb-10">
         <button class="w-14 h-14 bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-black/50 transition">
           <Flashlight class="w-7 h-7" />
         </button>

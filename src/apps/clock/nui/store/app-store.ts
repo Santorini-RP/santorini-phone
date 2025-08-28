@@ -225,10 +225,10 @@ export const useClockStore = defineStore('clock', () => {
         { id: 'delete', text: 'Delete', style: 'destructive' },
       ]
     });
-    if (result === 'delete') {
+    if (result.buttonId === 'delete') {
       alarms.value = alarms.value.filter(a => a.id !== alarmId);
     }
-    return result;
+    return result.buttonId;
   };
 
   const toggleAlarmEditMode = () => {

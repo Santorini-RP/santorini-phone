@@ -14,7 +14,7 @@ defineEmits(['snooze', 'stop']);
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-black/40 backdrop-blur-xl z-[200] flex flex-col justify-between items-center text-white p-8 pb-20 animate-fade-in">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-xl z-[200] flex flex-col justify-between items-center text-white p-8 pb-20 animate-fade-in">
     <div class="flex-1 flex flex-col items-center justify-center text-center">
       <h1 class="text-6xl font-bold">{{ alarm.label }}</h1>
       <p class="text-4xl font-light mt-2">{{ alarm.time }}</p>

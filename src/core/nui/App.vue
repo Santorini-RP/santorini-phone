@@ -14,6 +14,7 @@ import PhoneFrame from '@core/nui/components/PhoneFrame.vue'
 import NavigationBar from '@core/nui/components/NavigationBar.vue'
 import Modal from '@core/nui/components/Modal.vue'
 import ActionSheet from '@core/nui/components/ActionSheet.vue'
+import BottomSheet from '@core/nui/components/BottomSheet.vue'
 import TimerFinishedAlert from '@apps/clock/nui/components/TimerFinishedAlert.vue'
 import AlarmFinishedAlert from '@apps/clock/nui/components/AlarmFinishedAlert.vue'
 import NewMessageModal from '@apps/mail/nui/components/NewMessageModal.vue'
@@ -139,51 +140,11 @@ onMounted(() => {
           :class="{ 'opacity-0': !isScreenOn }"
         >
           <div class="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-indigo-800/70 to-black/50"></div>
-          <div 
-            v-if="isScreenOn && showDynamicIsland"
-            @click="toggleIsland"
-            class="absolute top-3 left-1/2 -translate-x-1/2 z-[200] transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)]"
-            :class="isIslandExpanded ? 'w-[90%]' : 'w-[120px]'"
-          >
-            <div 
-              class="bg-black rounded-full flex items-center cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.6)] hover:bg-zinc-900"
-              :class="isIslandExpanded ? 'h-[80px] p-4' : 'h-[30px]'"
-            >
-              <div v-if="!isIslandExpanded" class="flex items-center justify-end w-full px-2 transition-opacity duration-200">
-                <div class="w-3 h-3 rounded-full bg-blue-900/50 relative overflow-hidden">
-                  <div class="absolute inset-0 bg-gradient-radial from-blue-400/50 to-transparent to-70%"></div>
-                  <div class="absolute top-1/3 left-1/3 w-px h-px bg-blue-200/80 rounded-full"></div>
-                </div>
-              </div>
-              <div v-else class="text-white w-full flex items-center justify-between animate-fade-in opacity-0" style="animation-delay: 200ms; animation-fill-mode: forwards;">
-                <div class="flex items-center space-x-3 overflow-hidden">
-                  <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Music class="w-6 h-6" />
-                  </div>
-                  <div class="truncate">
-                    <p class="text-sm font-semibold truncate">Song Title Placeholder</p>
-                    <p class="text-xs text-gray-400 truncate">Artist Name</p>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-2 flex-shrink-0">
-                  <div class="w-10 h-6 flex items-center justify-between">
-                    <span class="w-1 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0s"></span>
-                    <span class="w-1 h-4 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></span>
-                    <span class="w-1 h-5 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></span>
-                    <span class="w-1 h-3 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.6s"></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <StatusBar 
-            v-if="isScreenOn && layoutStore.statusBarMode !== 'fullscreen'" 
-            :time="currentTime"
-            class="absolute top-0 left-0 right-0 z-40"
-          />
+          
+          <!-- App Content & Wallpaper -->
           <main 
             v-if="isScreenOn" 
-            class="h-full w-full overflow-hidden absolute inset-0"
+            class="absolute inset-0 h-full w-full overflow-hidden z-10"
           >
             <LockScreen 
               v-if="systemStore.isLocked" 
@@ -207,23 +168,78 @@ onMounted(() => {
               </router-view>
             </div>
           </main>
-          <NavigationBar v-if="isScreenOn && !systemStore.isLocked" />
-          <TimerFinishedAlert 
-            v-if="clockStore.isTimerFinished"
-            @stop="clockStore.handleStopFinishedTimer"
-            @restart="clockStore.handleRestartFinishedTimer"
+
+          <!-- Dynamic Island -->
+          <div 
+            v-if="isScreenOn && showDynamicIsland"
+            @click="toggleIsland"
+            class="absolute top-3 left-1/2 -translate-x-1/2 z-20 transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)]"
+            :class="isIslandExpanded ? 'w-[90%]' : 'w-[120px]'"
+          >
+            <div 
+              class="bg-black rounded-full flex items-center cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.6)] hover:bg-zinc-900"
+              :class="isIslandExpanded ? 'h-[80px] p-4' : 'h-[30px]'"
+            >
+              <!-- Collapsed View -->
+              <div v-if="!isIslandExpanded" class="flex items-center justify-end w-full px-2 transition-opacity duration-200">
+                <div class="w-3 h-3 rounded-full bg-blue-900/50 relative overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-radial from-blue-400/50 to-transparent to-70%"></div>
+                  <div class="absolute top-1/3 left-1/3 w-px h-px bg-blue-200/80 rounded-full"></div>
+                </div>
+              </div>
+              <!-- Expanded View -->
+              <div v-else class="text-white w-full flex items-center justify-between animate-fade-in opacity-0" style="animation-delay: 200ms; animation-fill-mode: forwards;">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Music class="w-6 h-6" />
+                  </div>
+                  <div class="truncate">
+                    <p class="text-sm font-semibold truncate">Song Title Placeholder</p>
+                    <p class="text-xs text-gray-400 truncate">Artist Name</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                  <div class="w-10 h-6 flex items-center justify-between">
+                    <span class="w-1 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0s"></span>
+                    <span class="w-1 h-4 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></span>
+                    <span class="w-1 h-5 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></span>
+                    <span class="w-1 h-3 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.6s"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Global Overlays -->
+          <div class="absolute inset-0 z-30 pointer-events-none">
+            <TimerFinishedAlert 
+              v-if="clockStore.isTimerFinished"
+              @stop="clockStore.handleStopFinishedTimer"
+              @restart="clockStore.handleRestartFinishedTimer"
+              class="pointer-events-auto"
+            />
+            <AlarmFinishedAlert 
+              v-if="clockStore.ringingAlarm"
+              :alarm="clockStore.ringingAlarm"
+              @stop="clockStore.stopRingingAlarm"
+              @snooze="clockStore.snoozeAlarm"
+              class="pointer-events-auto"
+            />
+            <NewMessageModal v-if="mailUiStore.isNewMessageModalVisible" class="pointer-events-auto" />
+            <Modal class="pointer-events-auto" />
+            <ActionSheet class="pointer-events-auto" />
+            <BottomSheet class="pointer-events-auto" />
+          </div>
+          
+          <!-- Top UI Elements -->
+          <StatusBar 
+            v-if="isScreenOn && layoutStore.statusBarMode !== 'fullscreen'" 
+            :time="currentTime"
+            class="absolute top-0 left-0 right-0 z-50"
           />
-          <AlarmFinishedAlert 
-            v-if="clockStore.ringingAlarm"
-            :alarm="clockStore.ringingAlarm"
-            @stop="clockStore.stopRingingAlarm"
-            @snooze="clockStore.snoozeAlarm"
-          />
-          <NewMessageModal v-if="mailUiStore.isNewMessageModalVisible" />
+          <NavigationBar v-if="isScreenOn && !systemStore.isLocked" class="z-40"/>
         </div>
       </PhoneFrame>
-      <Modal />
-      <ActionSheet />
     </div>
   </div>
 </template>

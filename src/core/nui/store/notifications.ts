@@ -29,11 +29,7 @@ export const useNotificationStore = defineStore('notifications', () => {
       iconBgColor: 'bg-blue-500',
       title: 'Vehicle Update',
       body: 'Your vehicle (ABC 123) is ready for pickup',
-      time: '04:15',
-      actions: [
-        { label: 'Navigate', action: () => console.log('Navigate clicked') },
-        { label: 'Call', action: () => console.log('Call clicked') },
-      ]
+      time: '08:24',
     },
     {
       id: 2,

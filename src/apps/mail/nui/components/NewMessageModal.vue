@@ -26,7 +26,7 @@ const handleAttachment = () => {
 
 <template>
   <transition name="modal-slide">
-    <div v-if="mailUiStore.isNewMessageModalVisible" class="fixed inset-0 z-[100] flex flex-col justify-end font-sans">
+    <div v-if="mailUiStore.isNewMessageModalVisible" class="absolute inset-0 z-[100] flex flex-col justify-end font-sans">
       <!-- 
         This inner div represents the visible modal. 
         It's constrained to 95% height and has rounded corners to simulate

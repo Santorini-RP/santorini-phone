@@ -1,6 +1,7 @@
 {
   "apps": [
     "settings",
+    "contacts",
     "calculator",
     "apps",
     "phone",
