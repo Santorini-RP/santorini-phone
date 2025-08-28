@@ -1,63 +1,73 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+export interface Note {
+  id: number;
+  title: string;
+  content: string;
+  lastEdited: string; // Could be a Date object in a real app
+}
 
 export const useNotesStore = defineStore('notes', () => {
-  // State
-  const isLoaded = ref(false)
-  const data = ref<any[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const notes = ref<Note[]>([
+    { id: 1, title: 'Shopping List', content: 'Milk, eggs, bread, butter', lastEdited: '07:19' },
+    { id: 2, title: 'To Do List', content: 'Finish the UI - Implement the...', lastEdited: '04:19' },
+    { id: 3, title: 'another list', content: 'this is yet another list, it f...', lastEdited: 'terça-feira' },
+  ]);
 
-  // Actions
-  const loadData = async () => {
-    loading.value = true
-    error.value = null
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock data
-      data.value = [
-        { id: 1, title: 'Sample Item 1' },
-        { id: 2, title: 'Sample Item 2' },
-        { id: 3, title: 'Sample Item 3' }
-      ]
-      
-      isLoaded.value = true
-    } catch (err) {
-      error.value = 'Failed to load data'
-      console.error('Error loading notes data:', err)
-    } finally {
-      loading.value = false
+  const searchQuery = ref('');
+
+  const filteredNotes = computed(() => {
+    if (!searchQuery.value) {
+      return notes.value;
     }
-  }
+    const query = searchQuery.value.toLowerCase();
+    return notes.value.filter(note =>
+      note.title.toLowerCase().includes(query) ||
+      note.content.toLowerCase().includes(query)
+    );
+  });
 
-  const clearData = () => {
-    data.value = []
-    isLoaded.value = false
-    error.value = null
-  }
+  const totalNotes = computed(() => notes.value.length);
 
-  const addItem = (item: any) => {
-    data.value.push(item)
-  }
+  const getNoteById = computed(() => {
+    return (id: number) => notes.value.find(note => note.id === id);
+  });
 
-  const removeItem = (id: number) => {
-    data.value = data.value.filter(item => item.id !== id)
-  }
+  const createNoteAndGetId = (): number => {
+    const newId = notes.value.length > 0 ? Math.max(...notes.value.map(n => n.id)) + 1 : 1;
+    const newNote: Note = {
+      id: newId,
+      title: '',
+      content: '',
+      lastEdited: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    notes.value.unshift(newNote);
+    return newId;
+  };
+
+  const deleteNote = (id: number) => {
+    notes.value = notes.value.filter(note => note.id !== id);
+  };
+
+  const updateNote = (updatedNote: Note) => {
+    const index = notes.value.findIndex(note => note.id === updatedNote.id);
+    if (index !== -1) {
+      notes.value[index] = { 
+        ...updatedNote, 
+        lastEdited: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+      };
+    }
+  };
 
   return {
-    // State
-    isLoaded,
-    data,
-    loading,
-    error,
-    
-    // Actions
-    loadData,
-    clearData,
-    addItem,
-    removeItem
-  }
-})
+    notes,
+    searchQuery,
+    filteredNotes,
+    totalNotes,
+    getNoteById,
+    createNoteAndGetId,
+    deleteNote,
+    updateNote,
+  };
+});

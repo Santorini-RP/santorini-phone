@@ -7,7 +7,15 @@ const manifest: AppConfig = {
   preinstalled: true,
   removable: false,
   category: 'system',
-  route: '/app/notes'
+  route: '/app/notes',
+  statusBar: {
+    mode: 'default',
+    style: 'light'
+  },
+  navigationBar: {
+    mode: 'default',
+    style: 'light'
+  }
 }
 
 export default manifest
