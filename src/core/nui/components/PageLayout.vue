@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import PageHeader from './PageHeader.vue'
 import SubPageHeader from './SubPageHeader.vue'
 
 const props = defineProps<{
@@ -10,14 +9,13 @@ const props = defineProps<{
 }>();
 
 const route = useRoute();
-
-const isSubPage = computed(() => !!props.previousTitle);
 const isScrolled = ref(false);
+const isSubPage = computed(() => !!props.previousTitle);
 
 const handleScroll = (event: Event) => {
   const target = event.target as HTMLElement;
   isScrolled.value = target.scrollTop > 20;
-}
+};
 
 const backRouteTitle = computed(() => {
   const matchedRoutes = route.matched;
@@ -31,23 +29,17 @@ const backRouteTitle = computed(() => {
 
 <template>
   <div class="h-full text-black dark:text-white font-sans relative bg-gray-100 dark:bg-ios-dark-bg">
-    <!-- Header -->
-    <template v-if="isSubPage">
-      <SubPageHeader 
-        :title="pageTitle" 
-        :previous-title="backRouteTitle"
-      >
-        <template #actions>
-          <slot name="header-actions"></slot>
-        </template>
-      </SubPageHeader>
-    </template>
-    <template v-else>
-      <PageHeader 
-        :title="pageTitle" 
-        :is-scrolled="isScrolled" 
-      />
-    </template>
+    <!-- Unified Header -->
+    <SubPageHeader 
+      :title="pageTitle" 
+      :previous-title="backRouteTitle"
+      :is-sub-page="isSubPage"
+      :is-scrolled="isScrolled"
+    >
+      <template #actions>
+        <slot name="header-actions"></slot>
+      </template>
+    </SubPageHeader>
 
     <!-- Main Content -->
     <div 
@@ -63,7 +55,7 @@ const backRouteTitle = computed(() => {
       <!-- Content Slot -->
       <slot></slot>
 
-      <!-- Bottom Spacer ("Respiro") -->
+      <!-- Bottom Spacer -->
       <div class="h-8"></div>
     </div>
   </div>

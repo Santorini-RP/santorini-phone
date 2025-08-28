@@ -7,7 +7,11 @@ const manifest: AppConfig = {
   preinstalled: true,
   removable: false,
   category: 'system',
-  route: '/app/mail'
+  route: '/app/mail',
+  statusBar: {
+    mode: 'default',
+    style: 'light'
+  },
 }
 
 export default manifest

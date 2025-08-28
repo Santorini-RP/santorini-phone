@@ -36,7 +36,7 @@ const getButtonClass = (option: ActionSheetOption) => {
                 { 'border-t border-gray-400/30 dark:border-gray-600/50': optionIndex > 0 }
               ]"
             >
-              <span class="flex-1 text-left">{{ option.text }}</span>
+              <span class="flex-1 text-center">{{ option.text }}</span>
               <component v-if="option.icon" :is="option.icon" class="w-6 h-6 ml-3 flex-shrink-0" />
             </button>
           </div>

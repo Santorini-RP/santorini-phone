@@ -4,6 +4,8 @@ import { useRoute } from 'vue-router'
 import { useSystemStore } from '@core/nui/store/system'
 import { useLayoutStore } from '@core/nui/store/layout'
 import { useSettingsStore } from '@apps/settings/nui/store/app-store'
+import { useClockStore } from '@apps/clock/nui/store/app-store'
+import { useMailUiStore } from '@apps/mail/nui/store/uiStore'
 import { getAppById } from '@core/nui/services/appManager'
 import StatusBar from '@core/nui/components/StatusBar.vue'
 import LockScreen from '@core/nui/components/LockScreen.vue'
@@ -12,12 +14,17 @@ import PhoneFrame from '@core/nui/components/PhoneFrame.vue'
 import NavigationBar from '@core/nui/components/NavigationBar.vue'
 import Modal from '@core/nui/components/Modal.vue'
 import ActionSheet from '@core/nui/components/ActionSheet.vue'
+import TimerFinishedAlert from '@apps/clock/nui/components/TimerFinishedAlert.vue'
+import AlarmFinishedAlert from '@apps/clock/nui/components/AlarmFinishedAlert.vue'
+import NewMessageModal from '@apps/mail/nui/components/NewMessageModal.vue'
 import { Music } from 'lucide-vue-next'
 
 const route = useRoute()
 const systemStore = useSystemStore()
 const layoutStore = useLayoutStore()
 const settingsStore = useSettingsStore()
+const clockStore = useClockStore()
+const mailUiStore = useMailUiStore()
 
 const isScreenOn = ref(true)
 const showDynamicIsland = ref(false)
@@ -201,6 +208,18 @@ onMounted(() => {
             </div>
           </main>
           <NavigationBar v-if="isScreenOn && !systemStore.isLocked" />
+          <TimerFinishedAlert 
+            v-if="clockStore.isTimerFinished"
+            @stop="clockStore.handleStopFinishedTimer"
+            @restart="clockStore.handleRestartFinishedTimer"
+          />
+          <AlarmFinishedAlert 
+            v-if="clockStore.ringingAlarm"
+            :alarm="clockStore.ringingAlarm"
+            @stop="clockStore.stopRingingAlarm"
+            @snooze="clockStore.snoozeAlarm"
+          />
+          <NewMessageModal v-if="mailUiStore.isNewMessageModalVisible" />
         </div>
       </PhoneFrame>
       <Modal />
