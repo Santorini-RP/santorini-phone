@@ -12,9 +12,9 @@ const getButtonClass = (button: ModalButton) => {
 
   switch (button.style) {
     case 'destructive':
-      return 'font-semibold text-red-500 hover:bg-black/5 dark:hover:bg-white/5';
+      return 'text-red-500 hover:bg-black/5 dark:hover:bg-white/5';
     case 'cancel':
-      return 'font-bold text-blue-500 hover:bg-black/5 dark:hover:bg-white/5';
+      return 'text-blue-500 hover:bg-black/5 dark:hover:bg-white/5';
     default:
       return 'text-blue-500 hover:bg-black/5 dark:hover:bg-white/5';
   }

@@ -1,62 +1,55 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useVoicememoStore } from './store/app-store';
+import PageLayout from '@core/nui/components/PageLayout.vue';
+import SearchInput from '@core/nui/components/SearchInput.vue';
+import VoiceMemoItem from './components/VoiceMemoItem.vue';
 
-const router = useRouter()
-
-const goBack = () => {
-  router.push('/')
-}
+const store = useVoicememoStore();
 </script>
 
 <template>
-  <div class="h-full bg-gradient-to-br from-gray-900 to-black text-white flex flex-col">
-    <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-800">
-      <button 
-        @click="goBack"
-        class="text-blue-400 text-lg hover:text-blue-300 transition-colors"
-      >
-        ← Back
-      </button>
-      <h1 class="text-lg font-semibold">Voice Memos</h1>
-      <div class="w-12"></div>
-    </div>
+  <div class="h-full w-full bg-gray-100 dark:bg-ios-dark-bg flex flex-col font-sans">
+    <PageLayout page-title="Voice Recordings">
+      <div class="px-4 -mt-2">
+        <SearchInput v-model="store.searchQuery" placeholder="Search recordings" />
+      </div>
 
-    <!-- App Content -->
-    <div class="flex-1 flex flex-col items-center justify-center p-8">
-      <div class="text-center space-y-6">
-        <!-- App Icon -->
-        <div class="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-4xl shadow-2xl">
-          ��️
-        </div>
-        
-        <!-- App Info -->
-        <div class="space-y-2">
-          <h2 class="text-2xl font-bold">Voice Memos</h2>
-          <p class="text-gray-400">Voice Recording</p>
-        </div>
-        
-        <!-- Coming Soon -->
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 rounded-full">
-          <span class="text-white font-semibold">Em Breve</span>
-        </div>
-        
-        <!-- Features List -->
-        <div class="mt-8 space-y-3 text-left max-w-sm">
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span class="text-gray-300">Interface moderna e intuitiva</span>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span class="text-gray-300">Funcionalidades avançadas</span>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span class="text-gray-300">Integração com sistema</span>
+      <div class="mt-4 mx-2">
+        <div class="bg-white dark:bg-ios-dark-card rounded-xl overflow-hidden">
+          <VoiceMemoItem 
+            v-for="(memo, index) in store.filteredMemos"
+            :key="memo.id"
+            :memo="memo"
+            :is-selected="store.selectedMemoId === memo.id"
+            :is-last="index === store.filteredMemos.length - 1"
+            @select="store.selectMemo(memo.id)"
+            @delete="store.deleteMemo(memo.id)"
+          />
+          <div v-if="store.filteredMemos.length === 0" class="p-4 text-center text-gray-500">
+            No recordings found.
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
+
+    <footer class="sticky bottom-0 z-10 bg-gray-100/80 dark:bg-ios-dark-bg/80 backdrop-blur-md flex flex-col justify-center items-center h-28">
+      <!-- Timer Display -->
+      <div class="h-6 mb-2">
+        <span v-if="store.isRecording" class="text-lg text-gray-500 dark:text-gray-400 font-mono animate-fade-in">
+          {{ store.formattedElapsedTime }}
+        </span>
+      </div>
+      
+      <!-- Record Button -->
+      <button @click="store.toggleRecording" class="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center shadow-md active:scale-95 transition-transform">
+        <div 
+          class="bg-red-500 transition-all duration-300 ease-in-out"
+          :class="{
+            'w-14 h-14 rounded-full': !store.isRecording,
+            'w-8 h-8 rounded-md': store.isRecording
+          }"
+        ></div>
+      </button>
+    </footer>
   </div>
 </template>

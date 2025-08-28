@@ -7,7 +7,15 @@ const manifest: AppConfig = {
   preinstalled: true,
   removable: false,
   category: 'system',
-  route: '/app/voicememo'
+  route: '/app/voicememo',
+  statusBar: {
+    mode: 'default',
+    style: 'light'
+  },
+  navigationBar: {
+    mode: 'default',
+    style: 'light'
+  }
 }
 
 export default manifest
