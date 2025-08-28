@@ -4,6 +4,12 @@ import { useModalStore, type ModalButton } from '@core/nui/store/modal';
 const modalStore = useModalStore();
 
 const getButtonClass = (button: ModalButton) => {
+  const isDisabled = button.style === 'default' && modalStore.isDefaultActionDisabled;
+
+  if (isDisabled) {
+    return 'font-normal text-gray-400 dark:text-gray-600';
+  }
+
   switch (button.style) {
     case 'destructive':
       return 'font-semibold text-red-500 hover:bg-black/5 dark:hover:bg-white/5';
@@ -26,7 +32,7 @@ const handleBackgroundClick = () => {
   <transition name="fade">
     <div
       v-if="modalStore.isVisible"
-      class="fixed inset-0 bg-black/30 dark:bg-black/50 z-[100] flex items-center justify-center p-4"
+      class="absolute inset-0 bg-black/30 dark:bg-black/50 z-[100] flex items-center justify-center p-4"
       @click.self="handleBackgroundClick"
     >
       <transition name="zoom">
@@ -38,8 +44,20 @@ const handleBackgroundClick = () => {
           <div class="p-4 pb-3">
             <h3 class="font-bold text-lg text-black dark:text-white">{{ modalStore.title }}</h3>
             <p v-if="modalStore.message" class="text-sm mt-1 text-black/90 dark:text-white/90 whitespace-pre-line">{{ modalStore.message }}</p>
+            
+            <!-- Input Fields -->
+            <div v-if="modalStore.inputs.length > 0" class="mt-4 bg-white/50 dark:bg-black/20 rounded-md border border-gray-400/50 dark:border-gray-600/50 divide-y divide-gray-400/50 dark:divide-gray-600/50">
+              <input
+                v-for="input in modalStore.inputs"
+                :key="input.id"
+                v-model="input.value"
+                :type="input.type || 'text'"
+                :placeholder="input.placeholder || ''"
+                class="w-full px-2 py-1.5 text-sm text-center text-black dark:text-white bg-transparent focus:outline-none"
+              />
+            </div>
           </div>
-          <!-- Actions: Layout adapts to button count (iOS style) -->
+          <!-- Actions -->
           <div
             class="border-t border-gray-400/40 dark:border-gray-600/60"
             :class="{
@@ -51,13 +69,12 @@ const handleBackgroundClick = () => {
               v-for="(button, index) in modalStore.buttons"
               :key="button.id"
               @click="modalStore.handleButtonClick(button.id)"
+              :disabled="button.style === 'default' && modalStore.isDefaultActionDisabled"
               class="py-3 text-lg transition-colors duration-100"
               :class="[
                 getButtonClass(button),
-                // Horizontal layout for 1-2 buttons
                 { 'flex-1': modalStore.buttons.length <= 2 },
                 { 'border-l border-gray-400/40 dark:border-gray-600/60': modalStore.buttons.length === 2 && index > 0 },
-                // Vertical layout for 3+ buttons
                 { 'w-full': modalStore.buttons.length > 2 },
                 { 'border-t border-gray-400/40 dark:border-gray-600/60': modalStore.buttons.length > 2 && index > 0 }
               ]"

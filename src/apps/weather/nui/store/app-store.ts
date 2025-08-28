@@ -1,63 +1,58 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, markRaw } from 'vue'
+import { Sun, Cloud, Thermometer, Sunset, Wind, Droplets } from 'lucide-vue-next'
+
+export interface HourlyForecast {
+  time: string;
+  icon: any; // Using any for component type
+  temp: number;
+}
 
 export const useWeatherStore = defineStore('weather', () => {
-  // State
-  const isLoaded = ref(false)
-  const data = ref<any[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const location = ref('Los Santos')
+  const currentTemp = ref(80)
+  const condition = ref('Clear')
 
-  // Actions
-  const loadData = async () => {
-    loading.value = true
-    error.value = null
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock data
-      data.value = [
-        { id: 1, title: 'Sample Item 1' },
-        { id: 2, title: 'Sample Item 2' },
-        { id: 3, title: 'Sample Item 3' }
-      ]
-      
-      isLoaded.value = true
-    } catch (err) {
-      error.value = 'Failed to load data'
-      console.error('Error loading weather data:', err)
-    } finally {
-      loading.value = false
-    }
-  }
+  const hourlyForecasts = ref<HourlyForecast[]>([
+    { time: 'Now', icon: markRaw(Sun), temp: 80 },
+    { time: '6AM', icon: markRaw(Sun), temp: 80 },
+    { time: '7AM', icon: markRaw(Sun), temp: 75 },
+    { time: '8AM', icon: markRaw(Sun), temp: 73 },
+    { time: '9AM', icon: markRaw(Cloud), temp: 65 },
+  ])
 
-  const clearData = () => {
-    data.value = []
-    isLoaded.value = false
-    error.value = null
-  }
+  const feelsLike = ref({
+    temp: 85,
+    description: 'Humidity is making it feel warmer',
+    icon: markRaw(Thermometer)
+  })
 
-  const addItem = (item: any) => {
-    data.value.push(item)
-  }
+  const sunTimes = ref({
+    sunset: '10:09PM',
+    sunrise: '3:31AM',
+    icon: markRaw(Sunset)
+  })
 
-  const removeItem = (id: number) => {
-    data.value = data.value.filter(item => item.id !== id)
-  }
+  const wind = ref({
+    speed: 4,
+    direction: 'N',
+    icon: markRaw(Wind)
+  })
+
+  const precipitation = ref({
+    last24h: 0,
+    next24h: 0,
+    icon: markRaw(Droplets)
+  })
 
   return {
-    // State
-    isLoaded,
-    data,
-    loading,
-    error,
-    
-    // Actions
-    loadData,
-    clearData,
-    addItem,
-    removeItem
+    location,
+    currentTemp,
+    condition,
+    hourlyForecasts,
+    feelsLike,
+    sunTimes,
+    wind,
+    precipitation
   }
 })

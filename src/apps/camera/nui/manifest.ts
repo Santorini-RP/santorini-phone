@@ -11,9 +11,6 @@ const manifest: AppConfig = {
   statusBar: {
     mode: 'fullscreen',
     style: 'dark' // Ignored
-  },
-  navigationBar: {
-    mode: 'fullscreen'
   }
 }
 

@@ -7,7 +7,15 @@ const manifest: AppConfig = {
   preinstalled: false,
   removable: true,
   category: 'store',
-  route: '/app/home'
+  route: '/app/home',
+  statusBar: {
+    mode: 'fullscreen',
+    style: 'dark'
+  },
+  navigationBar: {
+    mode: 'overlay',
+    style: 'dark'
+  }
 }
 
 export default manifest

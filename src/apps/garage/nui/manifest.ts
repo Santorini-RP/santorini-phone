@@ -8,7 +8,15 @@ const manifest: AppConfig = {
   removable: true,
   category: 'store',
   route: '/app/garage',
-  notifications: 2
+  notifications: 2,
+  statusBar: {
+    mode: 'fullscreen',
+    style: 'dark'
+  },
+  navigationBar: {
+    mode: 'overlay',
+    style: 'dark'
+  }
 }
 
 export default manifest

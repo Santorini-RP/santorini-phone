@@ -9,12 +9,12 @@ const manifest: AppConfig = {
   category: 'system',
   route: '/app/clock',
   statusBar: {
-    mode: 'overlay',
-    style: 'light'
+    mode: 'default',
+    // Style is now omitted to be reactive to the theme
   },
   navigationBar: {
-    mode: 'overlay',
-    style: 'light'
+    mode: 'default',
+    // Style is now omitted to be reactive to the theme
   }
 }
 

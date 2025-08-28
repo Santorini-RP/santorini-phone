@@ -1,63 +1,53 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+export interface Car {
+  id: number;
+  name: string;
+  plate: string;
+  location: string;
+  status: 'garage' | 'impounded';
+  isLocked: boolean;
+  isEngineOn: boolean;
+  fuel: number;
+  engine: number;
+  body: number;
+}
 
 export const useGarageStore = defineStore('garage', () => {
-  // State
-  const isLoaded = ref(false)
-  const data = ref<any[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const cars = ref<Car[]>([
+    { id: 1, name: 'Blista Compact', plate: '49XJL722', location: 'Richman Glen', status: 'garage', isLocked: true, isEngineOn: false, fuel: 100, engine: 100, body: 100 },
+    { id: 2, name: 'Buccaneer', plate: '49XJL723', location: 'Buccaneer Way', status: 'garage', isLocked: true, isEngineOn: true, fuel: 85, engine: 92, body: 98 },
+    { id: 3, name: 'Buffalo', plate: '49XJL724', location: 'Grove Street', status: 'impounded', isLocked: true, isEngineOn: false, fuel: 40, engine: 60, body: 75 },
+  ])
 
-  // Actions
-  const loadData = async () => {
-    loading.value = true
-    error.value = null
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock data
-      data.value = [
-        { id: 1, title: 'Sample Item 1' },
-        { id: 2, title: 'Sample Item 2' },
-        { id: 3, title: 'Sample Item 3' }
-      ]
-      
-      isLoaded.value = true
-    } catch (err) {
-      error.value = 'Failed to load data'
-      console.error('Error loading garage data:', err)
-    } finally {
-      loading.value = false
+  const garageCars = computed(() => cars.value.filter(car => car.status === 'garage'))
+  const impoundedCars = computed(() => cars.value.filter(car => car.status === 'impounded'))
+
+  const getCarById = computed(() => {
+    return (carId: number) => cars.value.find(car => car.id === carId)
+  })
+
+  const toggleLockStatus = (carId: number) => {
+    const car = cars.value.find(c => c.id === carId);
+    if (car) {
+      car.isLocked = !car.isLocked;
     }
-  }
+  };
 
-  const clearData = () => {
-    data.value = []
-    isLoaded.value = false
-    error.value = null
-  }
-
-  const addItem = (item: any) => {
-    data.value.push(item)
-  }
-
-  const removeItem = (id: number) => {
-    data.value = data.value.filter(item => item.id !== id)
-  }
+  const toggleEngineStatus = (carId: number) => {
+    const car = cars.value.find(c => c.id === carId);
+    if (car) {
+      car.isEngineOn = !car.isEngineOn;
+    }
+  };
 
   return {
-    // State
-    isLoaded,
-    data,
-    loading,
-    error,
-    
-    // Actions
-    loadData,
-    clearData,
-    addItem,
-    removeItem
+    cars,
+    garageCars,
+    impoundedCars,
+    getCarById,
+    toggleLockStatus,
+    toggleEngineStatus,
   }
 })

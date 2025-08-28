@@ -11,7 +11,7 @@ const manifest: AppConfig = {
   size: 512000, // 512 KB
   statusBar: {
     mode: 'overlay',
-    style: 'dark'
+    // Style is now omitted to be reactive to the theme
   },
   navigationBar: {
     mode: 'overlay'
@@ -22,8 +22,8 @@ const manifest: AppConfig = {
   compatibility: 'Works with this phone',
   inAppPurchases: 'No',
   screenshots: [
-    'https://img-wrapper.vercel.app/image?url=https://placehold.co/270x585/1c1c1e/eee?text=Calculator',
-    'https://img-wrapper.vercel.app/image?url=https://placehold.co/270x585/f0f0f0/333?text=Calculator'
+    'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/270x585/1c1c1e/eee?text=Calculator',
+    'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/270x585/f0f0f0/333?text=Calculator'
   ]
 }
 
