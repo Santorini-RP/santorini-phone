@@ -7,10 +7,9 @@ export interface Listing {
   title: string;
   description: string;
   price: number;
-  imageUrls: string[];
+  imageUrl: string;
   timestamp: string;
   isOwner?: boolean;
-  sellerPhone?: string;
 }
 
 export interface NewListingData {
@@ -27,43 +26,36 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
       title: 'X80 Proto',
       description: 'X80 Proto, white with red details. Has been driven carefully and is in mint condition',
       price: 2000000,
-      imageUrls: ['https://img-wrapper.vercel.app/image?url=https://i.imgur.com/v2QzVzT.jpeg'],
+      imageUrl: 'https://img-wrapper.vercel.app/image?url=https://i.imgur.com/v2QzVzT.jpeg',
       timestamp: 'Yesterday, 21:24',
       isOwner: false,
-      sellerPhone: '(060) 664-3134',
     },
     {
       id: 2,
       title: 'Banshee',
       description: 'Selling my 2020 model Bravado Banshee, low mileage and in perfect condition. Price is negotiable.',
       price: 74999,
-      imageUrls: [
-        'https://img-wrapper.vercel.app/image?url=https://i.imgur.com/sC5B7h1.jpeg',
-        'https://img-wrapper.vercel.app/image?url=https://i.imgur.com/bW5E32P.jpeg'
-      ],
+      imageUrl: 'https://img-wrapper.vercel.app/image?url=https://i.imgur.com/sC5B7h1.jpeg',
       timestamp: 'agosto 26th, 2025',
       isOwner: false,
-      sellerPhone: '(123) 456-7890',
     },
     {
       id: 3,
       title: 'Sanchez, 2018 Model',
       description: 'Selling my 2018 Sanchez. It has low mileage and is in perfect condition. Price is negotiable.',
       price: 1999,
-      imageUrls: ['https://img-wrapper.vercel.app/image?url=https://i.imgur.com/N8py2nO.jpeg'],
+      imageUrl: 'https://img-wrapper.vercel.app/image?url=https://i.imgur.com/N8py2nO.jpeg',
       timestamp: 'agosto 25th, 2025',
       isOwner: false,
-      sellerPhone: '(123) 456-7891',
     },
     {
       id: 4,
       title: 'Dominator',
       description: 'Selling my 2020 model Dominator, low mileage and in perfect condition.',
       price: 49999,
-      imageUrls: ['https://img-wrapper.vercel.app/image?url=https://i.imgur.com/bW5E32P.jpeg'],
+      imageUrl: 'https://img-wrapper.vercel.app/image?url=https://i.imgur.com/bW5E32P.jpeg',
       timestamp: 'agosto 23th, 2025',
       isOwner: true,
-      sellerPhone: '(123) 456-7892',
     },
   ]);
 
@@ -85,10 +77,6 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
     return filteredListings.value.filter(l => l.isOwner);
   });
 
-  const getListingById = computed(() => {
-    return (id: number) => listings.value.find(l => l.id === id);
-  });
-
   const formatPrice = (price: number) => {
     const formatted = new Intl.NumberFormat('de-DE').format(price);
     return `$${formatted}`;
@@ -100,7 +88,7 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
       title: data.title,
       description: data.description,
       price: data.price,
-      imageUrls: ['https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/200x150/e0e0e0/777?text=New+Post'],
+      imageUrl: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/200x150/e0e0e0/777?text=New+Post',
       timestamp: 'Just now',
       isOwner: true,
     };
@@ -130,7 +118,6 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
     searchQuery,
     filteredListings,
     userListings,
-    getListingById,
     formatPrice,
     addListing,
     deleteListing,

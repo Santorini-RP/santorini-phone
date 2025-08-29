@@ -281,6 +281,15 @@ onMounted(() => {
   transform: translateX(-100%);
 }
 
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+}
+
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.2s ease;
 }
