@@ -6,8 +6,15 @@ const manifest: AppConfig = {
   icon: '💻',
   preinstalled: true,
   removable: false,
-  category: 'store',
-  route: '/app/services'
+  category: 'system',
+  route: '/app/services',
+  statusBar: {
+    mode: 'default',
+    style: 'light'
+  },
+  navigationBar: {
+    mode: 'hidden'
+  }
 }
 
 export default manifest

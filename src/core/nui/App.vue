@@ -6,6 +6,7 @@ import { useLayoutStore } from '@core/nui/store/layout'
 import { useSettingsStore } from '@apps/settings/nui/store/app-store'
 import { useClockStore } from '@apps/clock/nui/store/app-store'
 import { useMailUiStore } from '@apps/mail/nui/store/uiStore'
+import { useCallStore } from '@core/nui/store/callStore'
 import { getAppById } from '@core/nui/services/appManager'
 import StatusBar from '@core/nui/components/StatusBar.vue'
 import LockScreen from '@core/nui/components/LockScreen.vue'
@@ -15,10 +16,11 @@ import NavigationBar from '@core/nui/components/NavigationBar.vue'
 import Modal from '@core/nui/components/Modal.vue'
 import ActionSheet from '@core/nui/components/ActionSheet.vue'
 import BottomSheet from '@core/nui/components/BottomSheet.vue'
+import InCallScreen from '@core/nui/components/InCallScreen.vue'
 import TimerFinishedAlert from '@apps/clock/nui/components/TimerFinishedAlert.vue'
 import AlarmFinishedAlert from '@apps/clock/nui/components/AlarmFinishedAlert.vue'
 import NewMessageModal from '@apps/mail/nui/components/NewMessageModal.vue'
-import { Music } from 'lucide-vue-next'
+import { Music, Phone } from 'lucide-vue-next'
 
 const route = useRoute()
 const systemStore = useSystemStore()
@@ -26,6 +28,7 @@ const layoutStore = useLayoutStore()
 const settingsStore = useSettingsStore()
 const clockStore = useClockStore()
 const mailUiStore = useMailUiStore()
+const callStore = useCallStore()
 
 const isScreenOn = ref(true)
 const showDynamicIsland = ref(false)
@@ -99,6 +102,7 @@ const handleUnlock = () => {
 }
 
 const toggleIsland = () => {
+  if (callStore.isActive) return; // Don't expand if in a call
   isIslandExpanded.value = !isIslandExpanded.value
 }
 
@@ -173,7 +177,7 @@ onMounted(() => {
           <div 
             v-if="isScreenOn && showDynamicIsland"
             @click="toggleIsland"
-            class="absolute top-3 left-1/2 -translate-x-1/2 z-20 transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)]"
+            class="absolute top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.3,1.2,0.5,1.2)]"
             :class="isIslandExpanded ? 'w-[90%]' : 'w-[120px]'"
           >
             <div 
@@ -181,13 +185,18 @@ onMounted(() => {
               :class="isIslandExpanded ? 'h-[80px] p-4' : 'h-[30px]'"
             >
               <!-- Collapsed View -->
-              <div v-if="!isIslandExpanded" class="flex items-center justify-end w-full px-2 transition-opacity duration-200">
+              <div v-if="!isIslandExpanded" class="flex items-center justify-between w-full px-2 transition-opacity duration-200">
+                <div v-if="callStore.isActive" class="flex items-center space-x-1.5">
+                  <Phone class="w-3 h-3 text-green-400" />
+                  <span class="text-xs text-green-400 font-medium">{{ callStore.contactName }}</span>
+                </div>
+                <div v-else></div> <!-- Placeholder for layout -->
                 <div class="w-3 h-3 rounded-full bg-blue-900/50 relative overflow-hidden">
                   <div class="absolute inset-0 bg-gradient-radial from-blue-400/50 to-transparent to-70%"></div>
                   <div class="absolute top-1/3 left-1/3 w-px h-px bg-blue-200/80 rounded-full"></div>
                 </div>
               </div>
-              <!-- Expanded View -->
+              <!-- Expanded View (Music Example) -->
               <div v-else class="text-white w-full flex items-center justify-between animate-fade-in opacity-0" style="animation-delay: 200ms; animation-fill-mode: forwards;">
                 <div class="flex items-center space-x-3 overflow-hidden">
                   <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -212,6 +221,7 @@ onMounted(() => {
 
           <!-- Global Overlays -->
           <div class="absolute inset-0 z-30 pointer-events-none">
+            <InCallScreen class="pointer-events-auto" />
             <TimerFinishedAlert 
               v-if="clockStore.isTimerFinished"
               @stop="clockStore.handleStopFinishedTimer"
@@ -233,11 +243,11 @@ onMounted(() => {
           
           <!-- Top UI Elements -->
           <StatusBar 
-            v-if="isScreenOn && layoutStore.statusBarMode !== 'fullscreen'" 
+            v-if="isScreenOn && layoutStore.statusBarMode !== 'fullscreen' && !callStore.isActive" 
             :time="currentTime"
             class="absolute top-0 left-0 right-0 z-50"
           />
-          <NavigationBar v-if="isScreenOn && !systemStore.isLocked" class="z-40"/>
+          <NavigationBar v-if="isScreenOn && !systemStore.isLocked && !callStore.isActive" class="z-40"/>
         </div>
       </PhoneFrame>
     </div>
