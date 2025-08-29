@@ -1,62 +1,36 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
+import { usePagesStore } from './store/app-store';
+import PageLayout from '@core/nui/components/PageLayout.vue';
+import SearchInput from '@core/nui/components/SearchInput.vue';
+import PageItem from './components/PageItem.vue';
+import { SquarePen } from 'lucide-vue-next';
 
-const router = useRouter()
+const store = usePagesStore();
+const router = useRouter();
 
-const goBack = () => {
-  router.push('/')
-}
+const handleNewPost = () => {
+  router.push('/app/pages/new');
+};
 </script>
 
 <template>
-  <div class="h-full bg-gradient-to-br from-gray-900 to-black text-white flex flex-col">
-    <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-800">
-      <button 
-        @click="goBack"
-        class="text-blue-400 text-lg hover:text-blue-300 transition-colors"
-      >
-        ← Back
+  <PageLayout page-title="Pages">
+    <template #header-actions>
+      <button @click="handleNewPost" class="text-blue-500">
+        <SquarePen class="w-6 h-6" />
       </button>
-      <h1 class="text-lg font-semibold">Pages</h1>
-      <div class="w-12"></div>
-    </div>
+    </template>
 
-    <!-- App Content -->
-    <div class="flex-1 flex flex-col items-center justify-center p-8">
-      <div class="text-center space-y-6">
-        <!-- App Icon -->
-        <div class="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-4xl shadow-2xl">
-          ⚡
-        </div>
-        
-        <!-- App Info -->
-        <div class="space-y-2">
-          <h2 class="text-2xl font-bold">Pages</h2>
-          <p class="text-gray-400">Pages</p>
-        </div>
-        
-        <!-- Coming Soon -->
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 rounded-full">
-          <span class="text-white font-semibold">Em Breve</span>
-        </div>
-        
-        <!-- Features List -->
-        <div class="mt-8 space-y-3 text-left max-w-sm">
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span class="text-gray-300">Interface moderna e intuitiva</span>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span class="text-gray-300">Funcionalidades avançadas</span>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span class="text-gray-300">Integração com sistema</span>
-          </div>
-        </div>
+    <div class="px-4 -mt-2 space-y-3">
+      <SearchInput v-model="store.searchQuery" placeholder="Search for posts or numbers" />
+      <div class="space-y-3">
+        <PageItem
+          v-for="page in store.filteredPages"
+          :key="page.id"
+          :page="page"
+        />
       </div>
     </div>
-  </div>
+  </PageLayout>
 </template>

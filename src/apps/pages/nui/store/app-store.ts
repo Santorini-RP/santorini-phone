@@ -1,63 +1,77 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
 
-export const useSparkStore = defineStore('spark', () => {
-  // State
-  const isLoaded = ref(false)
-  const data = ref<any[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+export interface Page {
+  id: number;
+  title: string;
+  description: string;
+  price?: number;
+  imageUrl?: string;
+}
 
-  // Actions
-  const loadData = async () => {
-    loading.value = true
-    error.value = null
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock data
-      data.value = [
-        { id: 1, title: 'Sample Item 1' },
-        { id: 2, title: 'Sample Item 2' },
-        { id: 3, title: 'Sample Item 3' }
-      ]
-      
-      isLoaded.value = true
-    } catch (err) {
-      error.value = 'Failed to load data'
-      console.error('Error loading spark data:', err)
-    } finally {
-      loading.value = false
+export interface NewPageData {
+  title: string;
+  description: string;
+  price?: number;
+  imageUrl?: string;
+}
+
+export const usePagesStore = defineStore('pages', () => {
+  const pages = ref<Page[]>([
+    {
+      id: 1,
+      title: 'Looking for a new job',
+      description: 'I am looking for a new job in the field of software development. I have 5 years of experience in the field and I am looking for a new challenge. I am open to any offers and I am willing to relocate.',
+    },
+    {
+      id: 2,
+      title: 'Banshee',
+      description: 'Selling my 2020 model Bravado Banshee, low mileage and in perfect condition. Price is negotiable.',
+      price: 74999,
+      imageUrl: 'https://img-wrapper.vercel.app/image?url=https://i.imgur.com/sC5B7h1.jpeg',
+    },
+    {
+      id: 3,
+      title: '2018+ Sanchez',
+      description: 'Looking for a 2018 or newer model Sanchez. I am willing to pay up to 20k for a good condition bike.',
+    },
+  ]);
+
+  const searchQuery = ref('');
+
+  const filteredPages = computed(() => {
+    if (!searchQuery.value) {
+      return pages.value;
     }
-  }
+    const query = searchQuery.value.toLowerCase();
+    return pages.value.filter(
+      page =>
+        page.title.toLowerCase().includes(query) ||
+        page.description.toLowerCase().includes(query)
+    );
+  });
 
-  const clearData = () => {
-    data.value = []
-    isLoaded.value = false
-    error.value = null
-  }
+  const formatPrice = (price: number) => {
+    const formatted = new Intl.NumberFormat('de-DE').format(price);
+    return `$${formatted}`;
+  };
 
-  const addItem = (item: any) => {
-    data.value.push(item)
-  }
-
-  const removeItem = (id: number) => {
-    data.value = data.value.filter(item => item.id !== id)
-  }
+  const addPage = (data: NewPageData) => {
+    const newPage: Page = {
+      id: Date.now(),
+      title: data.title,
+      description: data.description,
+      price: data.price,
+      imageUrl: data.imageUrl,
+    };
+    pages.value.unshift(newPage);
+  };
 
   return {
-    // State
-    isLoaded,
-    data,
-    loading,
-    error,
-    
-    // Actions
-    loadData,
-    clearData,
-    addItem,
-    removeItem
-  }
-})
+    pages,
+    searchQuery,
+    filteredPages,
+    formatPrice,
+    addPage,
+  };
+});

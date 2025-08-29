@@ -7,7 +7,15 @@ const manifest: AppConfig = {
   preinstalled: false,
   removable: true,
   category: 'store',
-  route: '/app/spark'
+  route: '/app/pages',
+  statusBar: {
+    mode: 'default',
+    style: 'light'
+  },
+  navigationBar: {
+    mode: 'default',
+    style: 'light'
+  }
 }
 
 export default manifest
